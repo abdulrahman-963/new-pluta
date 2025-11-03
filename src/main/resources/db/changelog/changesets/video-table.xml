@@ -1,0 +1,184 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="036-create-video-sequence" author="kilani">
+        <comment>Create sequence for video table</comment>
+
+        <createSequence
+                sequenceName="video_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="video_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="036-create-video-table" author="kilani">
+        <comment>Create video table with foreign keys to camera, zone, branch, and tenant</comment>
+
+        <createTable tableName="video">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_video"/>
+            </column>
+
+            <column name="camera_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="zone_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="original_file_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file_size" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="content_type" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file_path" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="duration" type="double"/>
+
+            <column name="frames_extracted" type="int"/>
+
+            <column name="processing_started_at" type="timestamp"/>
+
+            <column name="processing_completed_at" type="timestamp"/>
+
+            <column name="error_message" type="text"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(50)"/>
+
+            <column name="updated_by" type="varchar(50)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="video"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="037-add-video-foreign-keys" author="kilani">
+        <comment>Add foreign key constraints from video to camera, zone, branch, and tenant</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="video"
+                baseColumnNames="camera_id"
+                constraintName="fk_video_camera"
+                referencedTableName="camera"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="video"
+                baseColumnNames="zone_id"
+                constraintName="fk_video_zone"
+                referencedTableName="zone"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="video"
+                baseColumnNames="branch_id"
+                constraintName="fk_video_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="video"
+                baseColumnNames="tenant_id"
+                constraintName="fk_video_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="video"
+                    constraintName="fk_video_camera"/>
+            <dropForeignKeyConstraint
+                    baseTableName="video"
+                    constraintName="fk_video_zone"/>
+            <dropForeignKeyConstraint
+                    baseTableName="video"
+                    constraintName="fk_video_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="video"
+                    constraintName="fk_video_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="038-add-video-indexes" author="kilani">
+        <comment>Add indexes on video table for performance optimization</comment>
+
+        <createIndex indexName="idx_video_camera_id" tableName="video">
+            <column name="camera_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_video_zone_id" tableName="video">
+            <column name="zone_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_video_branch_id" tableName="video">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_video_tenant_id" tableName="video">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_video_processing_completed_at" tableName="video">
+            <column name="processing_completed_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_video_camera_id" tableName="video"/>
+            <dropIndex indexName="idx_video_zone_id" tableName="video"/>
+            <dropIndex indexName="idx_video_branch_id" tableName="video"/>
+            <dropIndex indexName="idx_video_tenant_id" tableName="video"/>
+            <dropIndex indexName="idx_video_processing_completed_at" tableName="video"/>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

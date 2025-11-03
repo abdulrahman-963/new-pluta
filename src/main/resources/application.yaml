@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: image-analysis-service
+
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: PLUTA
+    password: PLUTA
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+      file-size-threshold: 2KB
+
+  web:
+    resources:
+      static-locations: file:${analysis.upload-dir}/
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 10
+        queue-capacity: 100
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+    default-schema: PLUTA
+    liquibase-schema: PLUTA
+    drop-first: false
+# Custom application properties
+analysis:
+  python:
+    script-path: scripts/analyze_video.py
+    python-executable: /Users/abdulrahman/Desktop/POC/CameraAi/yolo-analyzer/venv/bin/python
+  upload-dir: /Users/abdulrahman/Desktop/POC/CameraAi/upload-image
+  max-concurrent-analyses: 2
+  cleanup-old-files: false
+  cleanup-days: 30
+
+# Video Processing
+video:
+  frames:
+    output:
+      duration: 2
+      directory: /Users/abdulrahman/Desktop/POC/CameraAi/video-procesing
+  temp:
+    directory: /Users/abdulrahman/Desktop/POC/CameraAi/video-procesing/temp
+  storage:
+    directory: /Users/abdulrahman/Desktop/POC/CameraAi/video-procesing/storage
+
+
+# Logging configuration
+logging:
+  level:
+    com.yourcompany.imageanalysis: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/image-analysis.log
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Server configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
+  compression:
+    enabled: true
+  http2:
+    enabled: true

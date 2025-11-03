@@ -1,0 +1,162 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="012-create-zone-sequence" author="developer">
+        <comment>Create sequence for zone table</comment>
+
+        <createSequence
+                sequenceName="zone_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="zone_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="012-create-zone-table" author="developer">
+        <comment>Create zone table with foreign key to branch</comment>
+
+        <createTable tableName="zone">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_zone"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(100)"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(100)"/>
+
+            <column name="updated_by" type="varchar(100)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="zone"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="013-add-zone-foreign-keys" author="developer">
+        <comment>Add foreign key constraint from zone to branch</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="zone"
+                baseColumnNames="branch_id"
+                constraintName="fk_zone_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="zone"
+                baseColumnNames="tenant_id"
+                constraintName="fk_zone_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="zone"
+                    constraintName="fk_zone_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="zone"
+                    constraintName="fk_zone_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+
+    <changeSet id="014-add-zone-indexes" author="developer">
+        <comment>Add indexes on zone table for performance optimization</comment>
+
+        <createIndex indexName="idx_zone_branch_id" tableName="zone">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_zone_code" tableName="zone">
+            <column name="code"/>
+        </createIndex>
+
+        <createIndex indexName="idx_zone_created_at" tableName="zone">
+            <column name="created_at"/>
+        </createIndex>
+
+        <createIndex indexName="idx_zone_tenant" tableName="zone">
+        <column name="tenant_id"/>
+        </createIndex>
+
+
+        <rollback>
+            <dropIndex indexName="idx_zone_branch_id" tableName="zone"/>
+            <dropIndex indexName="idx_zone_code" tableName="zone"/>
+            <dropIndex indexName="idx_zone_created_at" tableName="zone"/>
+            <dropIndex indexName="idx_zone_tenant" tableName="zone"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="015-add-zone-constraints" author="developer">
+        <comment>Add unique constraint on zone branch_id and code combination</comment>
+
+        <addUniqueConstraint
+                tableName="zone"
+                columnNames="tenant_id, branch_id, code"
+                constraintName="uk_zone_tenant_branch_code"/>
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="zone"
+                    constraintName="uk_zone_tenant_branch_code"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="017-insert-zone-test-data" author="developer" context="dev,test">
+        <comment>Insert test data for zone table - only runs in dev/test environments</comment>
+
+        <!-- Zones for Branch 1 (NYC-001 - Acme Corporation) -->
+        <insert tableName="zone">
+            <column name="id" valueSequenceNext="zone_seq"/>
+            <column name="branch_id" valueNumeric="1"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="code" value="FLOOR-1"/>
+            <column name="name" value="First Floor"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="kilani"/>
+            <column name="updated_by" value="kilani"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="zone">
+                <where>tenant_id IN (1)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
+
+</databaseChangeLog>

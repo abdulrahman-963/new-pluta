@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="005-create-branch-sequence" author="kilani">
+        <comment>Create sequence for branch table</comment>
+
+        <createSequence
+                sequenceName="branch_seq"
+                startValue="1"
+                incrementBy="1"
+                maxValue="9999999999"/>
+
+        <rollback>
+            <dropSequence sequenceName="branch_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="006-create-branch-table" author="kilani">
+        <comment>Create branch table with foreign key to tenant</comment>
+
+        <createTable tableName="branch">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_branch"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="country" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="city" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="address" type="varchar(255)"/>
+
+            <column name="timezone" type="varchar(50)"/>
+
+            <column name="max_capacity" type="int"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(50)"/>
+
+            <column name="updated_by" type="varchar(50)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="branch"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="007-add-branch-foreign-keys" author="kilani">
+        <comment>Add foreign key constraint from branch to tenant</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="branch"
+                baseColumnNames="tenant_id"
+                constraintName="fk_branch_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="branch"
+                    constraintName="fk_branch_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="008-add-branch-indexes" author="kilani">
+        <comment>Add indexes on branch table for performance optimization</comment>
+
+        <createIndex indexName="idx_branch_tenant_id" tableName="branch">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_branch_tenant_code" tableName="branch">
+            <column name="tenant_id"/>
+            <column name="code"/>
+        </createIndex>
+
+        <createIndex indexName="idx_branch_country" tableName="branch">
+            <column name="country"/>
+        </createIndex>
+
+        <createIndex indexName="idx_branch_city" tableName="branch">
+            <column name="city"/>
+        </createIndex>
+
+        <createIndex indexName="idx_branch_created_at" tableName="branch">
+            <column name="created_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_branch_tenant_id" tableName="branch"/>
+            <dropIndex indexName="idx_branch_tenant_code" tableName="branch"/>
+            <dropIndex indexName="idx_branch_country" tableName="branch"/>
+            <dropIndex indexName="idx_branch_city" tableName="branch"/>
+            <dropIndex indexName="idx_branch_created_at" tableName="branch"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="009-add-branch-constraints" author="kilani">
+        <comment>Add unique constraint on branch tenant_id and code combination</comment>
+
+        <addUniqueConstraint
+                tableName="branch"
+                columnNames="tenant_id, code"
+                constraintName="uk_branch_tenant_code"/>
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="branch"
+                    constraintName="uk_branch_tenant_code"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="010-insert-branch-test-data" author="kilani" context="dev,test">
+        <comment>Insert test data for branch table - only runs in dev/test environments</comment>
+
+        <!-- Branches for Acme Corporation (tenant ...001) -->
+        <insert tableName="branch">
+            <column name="id" valueSequenceNext="branch_seq"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="code" value="RYD-001"/>
+            <column name="name" value="Riyadh Headquarters"/>
+            <column name="country" value="Saudi Arabia"/>
+            <column name="city" value="Riyadh"/>
+            <column name="address" value="123 Alulea, RD 10005"/>
+            <column name="timezone" value="SA/Riyadh"/>
+            <column name="max_capacity" valueNumeric="50"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="Kilani"/>
+            <column name="updated_by" value="Kilani"/>
+        </insert>
+
+        <insert tableName="branch">
+            <column name="id" valueSequenceNext="branch_seq"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="code" value="RYD-002"/>
+            <column name="name" value="Heteen"/>
+            <column name="country" value="Saudi Arabia"/>
+            <column name="city" value="Riyadh"/>
+            <column name="address" value="123 Heteen, RD 10005"/>
+            <column name="timezone" value="SA/Riyadh"/>
+            <column name="max_capacity" valueNumeric="50"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="Kilani"/>
+            <column name="updated_by" value="Kilani"/>
+        </insert>
+
+        <!-- Branches for Acme Corporation (tenant ...002) -->
+        <insert tableName="branch">
+            <column name="id" valueSequenceNext="branch_seq"/>
+            <column name="tenant_id" valueComputed="2"/>
+            <column name="code" value="TEST-001"/>
+            <column name="name" value="TEST Headquarters"/>
+            <column name="country" value="Saudi Arabia"/>
+            <column name="city" value="Riyadh"/>
+            <column name="address" value="123 Alulea, RD 10005"/>
+            <column name="timezone" value="SA/Riyadh"/>
+            <column name="max_capacity" valueNumeric="50"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="Kilani"/>
+            <column name="updated_by" value="Kilani"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="branch">
+                <where>tenant_id IN (1)
+                </where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

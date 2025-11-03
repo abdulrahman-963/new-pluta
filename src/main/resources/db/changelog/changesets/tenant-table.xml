@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-tenant-table" author="kilani">
+        <comment>Create tenant table with base columns and audit fields</comment>
+
+        <createTable tableName="tenant">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_tenant"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contact_email" type="varchar(255)"/>
+            <column name="plan" type="varchar(50)"/>
+            <column name="status" type="varchar(20)"/>
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="updated_by" type="varchar(50)"/>
+        </createTable>
+
+        <createSequence  incrementBy="1"
+                         maxValue="9999999999"
+                         sequenceName="tenant_seq"
+                         startValue="1"/>
+
+        <rollback>
+            <dropTable tableName="tenant"/>
+            <dropSequence sequenceName="tenant_seq"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="002-add-tenant-indexes" author="kilani">
+        <comment>Add indexes on tenant table for performance optimization</comment>
+
+        <createIndex indexName="idx_tenant_name" tableName="tenant">
+            <column name="name"/>
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_code" tableName="tenant">
+            <column name="code"/>
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_status" tableName="tenant">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex indexName="idx_tenant_created_at" tableName="tenant">
+            <column name="created_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_tenant_name" tableName="tenant"/>
+            <dropIndex indexName="idx_tenant_status" tableName="tenant"/>
+            <dropIndex indexName="idx_tenant_code" tableName="tenant"/>
+            <dropIndex indexName="idx_tenant_created_at" tableName="tenant"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="003-add-tenant-constraints" author="kilani">
+        <comment>Add unique constraints on tenant table</comment>
+
+        <addUniqueConstraint
+                tableName="tenant"
+                columnNames="name"
+                constraintName="uk_tenant_name"/>
+
+        <addUniqueConstraint
+                tableName="tenant"
+                columnNames="code"
+                constraintName="uk_tenant_code"/>
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="tenant"
+                    constraintName="uk_tenant_name"/>
+            <dropUniqueConstraint
+                    tableName="tenant"
+                    constraintName="uk_tenant_code"/>
+        </rollback>
+    </changeSet>
+
+
+
+    <!-- Tenant 1: Active Enterprise Customer -->
+
+    <changeSet id="004-insert-test-data" author="kilani" context="dev,test">
+    <comment>Insert test data for tenant table - only runs in dev/test environments</comment>
+
+    <!-- Tenant 1: Active Enterprise Customer -->
+    <insert tableName="tenant">
+        <column name="id" valueSequenceNext="tenant_seq"/>
+        <column name="code" value="TEST1"/>
+        <column name="name" value="TEST1 Corporation"/>
+        <column name="contact_email" value="contact@Pluta.com"/>
+        <column name="plan" value="ENTERPRISE"/>
+        <column name="status" value="ACTIVE"/>
+        <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        <column name="created_by" value="Test"/>
+        <column name="updated_by" value="Test"/>
+
+    </insert>
+        <!-- Tenant 2: Active Enterprise Customer -->
+        <insert tableName="tenant">
+            <column name="id" valueSequenceNext="tenant_seq"/>
+            <column name="code" value="TEST2"/>
+            <column name="name" value="TEST2 Corporation"/>
+            <column name="contact_email" value="contact@Pluta.com"/>
+            <column name="plan" value="ENTERPRISE"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="Test"/>
+            <column name="updated_by" value="Test"/>
+        </insert>
+    </changeSet>
+
+
+</databaseChangeLog>

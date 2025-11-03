@@ -1,0 +1,207 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="018-create-camera-sequence" author="kilani">
+        <comment>Create sequence for camera table</comment>
+
+        <createSequence
+                sequenceName="camera_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="camera_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="018-create-camera-table" author="kilani">
+        <comment>Create camera table with foreign keys to zone, branch, and tenant</comment>
+
+        <createTable tableName="camera">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_camera"/>
+            </column>
+
+            <column name="zone_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="code" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(200)"/>
+
+            <column name="model" type="varchar(100)"/>
+
+            <column name="rtsp_url" type="text"/>
+
+            <column name="mount_position" type="varchar(100)"/>
+
+            <column name="resolution" type="varchar(20)"/>
+
+            <column name="fps" type="int"/>
+
+            <column name="status" type="varchar(20)" defaultValue="ACTIVE"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(255)"/>
+
+            <column name="updated_by" type="varchar(255)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="camera"/>
+        </rollback>
+    </changeSet>
+
+
+
+    <changeSet id="019-add-camera-foreign-keys" author="kilani">
+        <comment>Add foreign key constraints from camera to zone, branch, and tenant</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="camera"
+                baseColumnNames="zone_id"
+                constraintName="fk_camera_zone"
+                referencedTableName="zone"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="camera"
+                baseColumnNames="branch_id"
+                constraintName="fk_camera_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="camera"
+                baseColumnNames="tenant_id"
+                constraintName="fk_camera_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="camera"
+                    constraintName="fk_camera_zone"/>
+            <dropForeignKeyConstraint
+                    baseTableName="camera"
+                    constraintName="fk_camera_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="camera"
+                    constraintName="fk_camera_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="020-add-camera-indexes" author="kilani">
+        <comment>Add indexes on camera table for performance optimization</comment>
+
+        <createIndex indexName="idx_camera_zone_id" tableName="camera">
+            <column name="zone_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_camera_branch_id" tableName="camera">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_camera_tenant_branch_name" tableName="camera">
+            <column name="tenant_id"/>
+            <column name="branch_id"/>
+            <column name="name"/>
+        </createIndex>
+
+        <createIndex indexName="idx_camera_status" tableName="camera">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex indexName="idx_camera_created_at" tableName="camera">
+            <column name="created_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_camera_zone_id" tableName="camera"/>
+            <dropIndex indexName="idx_camera_branch_id" tableName="camera"/>
+            <dropIndex indexName="idx_camera_tenant_branch_name" tableName="camera"/>
+            <dropIndex indexName="idx_camera_status" tableName="camera"/>
+            <dropIndex indexName="idx_camera_created_at" tableName="camera"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="021-add-camera-constraints" author="kilani">
+        <comment>Add unique constraint on camera code, zone_id, branch_id, and tenant_id combination</comment>
+
+        <addUniqueConstraint
+                tableName="camera"
+                columnNames="code, zone_id, branch_id, tenant_id"
+                constraintName="uk_camera_code_zone_branch_tenant"/>
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="camera"
+                    constraintName="uk_camera_code_zone_branch_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+
+
+    <changeSet id="023-insert-camera-test-data" author="kilani" context="dev,test">
+        <comment>Insert test data for camera table - only runs in dev/test environments</comment>
+
+        <!-- Cameras for Zone 1 (FLOOR-1, Branch 1, Tenant 001) -->
+        <insert tableName="camera">
+            <column name="id" valueSequenceNext="camera_seq"/>
+            <column name="zone_id" valueNumeric="1"/>
+            <column name="branch_id" valueNumeric="1"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="code" value="CAM-001"/>
+            <column name="name" value="Main Entrance Camera"/>
+            <column name="model" value="Hikvision DS-2CD2385G1"/>
+            <column name="rtsp_url" value="rtsp://admin:password@192.168.1.100:554/stream1"/>
+            <column name="mount_position" value="Ceiling - Main Entrance"/>
+            <column name="resolution" value="1920x1080"/>
+            <column name="fps" valueNumeric="30"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="kilani"/>
+            <column name="updated_by" value="kilani"/>
+        </insert>
+
+      
+        <rollback>
+            <delete tableName="camera">
+                <where>tenant_id IN (1)
+                </where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

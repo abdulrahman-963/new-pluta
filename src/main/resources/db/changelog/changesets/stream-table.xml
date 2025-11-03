@@ -1,0 +1,193 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="031-create-stream-sequence" author="kilani">
+        <comment>Create sequence for stream table</comment>
+
+        <createSequence
+                sequenceName="stream_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="stream_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="031-create-stream-table" author="kilani">
+        <comment>Create stream table with foreign keys to camera, zone, branch, and tenant</comment>
+
+        <createTable tableName="stream">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_stream"/>
+            </column>
+
+            <column name="camera_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="zone_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="url" type="text"/>
+
+            <column name="api_key_secret_id" type="text"/>
+
+            <column name="username" type="varchar(50)"/>
+
+            <column name="password" type="varchar(255)"/>
+
+            <column name="model_version" type="varchar(50)"/>
+
+            <column name="sampling_interval_s" type="int" defaultValueNumeric="5"/>
+
+            <column name="active" type="boolean" defaultValueBoolean="true"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(50)"/>
+
+            <column name="updated_by" type="varchar(50)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="stream"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="032-add-stream-foreign-keys" author="kilani">
+        <comment>Add foreign key constraints from stream to camera, zone, branch, and tenant</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="stream"
+                baseColumnNames="camera_id"
+                constraintName="fk_stream_camera"
+                referencedTableName="camera"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="stream"
+                baseColumnNames="zone_id"
+                constraintName="fk_stream_zone"
+                referencedTableName="zone"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="stream"
+                baseColumnNames="branch_id"
+                constraintName="fk_stream_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="stream"
+                baseColumnNames="tenant_id"
+                constraintName="fk_stream_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="stream"
+                    constraintName="fk_stream_camera"/>
+            <dropForeignKeyConstraint
+                    baseTableName="stream"
+                    constraintName="fk_stream_zone"/>
+            <dropForeignKeyConstraint
+                    baseTableName="stream"
+                    constraintName="fk_stream_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="stream"
+                    constraintName="fk_stream_tenant"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="033-add-stream-indexes" author="kilani">
+        <comment>Add indexes on stream table for performance optimization</comment>
+
+        <createIndex indexName="idx_stream_camera_id" tableName="stream" unique="true">
+            <column name="camera_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_stream_zone_id" tableName="stream">
+            <column name="zone_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_stream_branch_id" tableName="stream">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_stream_tenant_id" tableName="stream">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_stream_active" tableName="stream">
+            <column name="active"/>
+        </createIndex>
+
+        <createIndex indexName="idx_stream_created_at" tableName="stream">
+            <column name="created_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_stream_camera_id" tableName="stream"/>
+            <dropIndex indexName="idx_stream_zone_id" tableName="stream"/>
+            <dropIndex indexName="idx_stream_branch_id" tableName="stream"/>
+            <dropIndex indexName="idx_stream_tenant_id" tableName="stream"/>
+            <dropIndex indexName="idx_stream_active" tableName="stream"/>
+            <dropIndex indexName="idx_stream_created_at" tableName="stream"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="035-insert-stream-test-data" author="kilani" context="dev,test">
+    <comment>Insert test data for stream table - only runs in dev/test environments</comment>
+
+    <!-- Stream 1: Camera 1 (Main Entrance) - Active -->
+    <insert tableName="stream">
+        <column name="id" valueSequenceNext="stream_seq"/>
+        <column name="camera_id" valueNumeric="1"/>
+        <column name="zone_id" valueNumeric="1"/>
+        <column name="branch_id" valueNumeric="1"/>
+        <column name="tenant_id" valueComputed="1"/>
+        <column name="url" value="https://api.stream-processor.example.com/v1/streams/camera-1"/>
+        <column name="api_key_secret_id" value="aws/secretsmanager/stream-api-key-001"/>
+        <column name="username" value="stream_user_001"/>
+        <column name="password" value="$2a$10$N9qo8uLOickgx2ZMRZoMye/JtjYtRXKZLT0.vZo2lR5YZ5vZNZZNu"/>
+        <column name="model_version" value="yolov8-v1.2.3"/>
+        <column name="sampling_interval_s" valueNumeric="5"/>
+        <column name="active" valueBoolean="true"/>
+        <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        <column name="created_by" value="kilani"/>
+        <column name="updated_by" value="kilani"/>
+    </insert>
+    </changeSet>
+
+</databaseChangeLog>

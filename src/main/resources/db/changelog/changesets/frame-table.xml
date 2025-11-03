@@ -1,0 +1,182 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="041-create-frame-sequence" author="developer">
+        <comment>Create sequence for frame table</comment>
+
+        <createSequence
+                sequenceName="frame_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="frame_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="041-create-frame-table" author="developer">
+        <comment>Create frame table for storing video frame analysis results</comment>
+
+        <createTable tableName="frame">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_frame"/>
+            </column>
+
+            <column name="video_id" type="bigint"/>
+
+            <column name="stream_id" type="bigint"/>
+
+            <column name="tenant_id" type="bigint">
+            <constraints nullable="false"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="annotated_image_path" type="varchar(500)"/>
+
+            <column name="resolution" type="varchar(20)"/>
+
+            <column name="tables_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="chairs_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="benches_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="couches_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="persons_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="total_detected" type="int" defaultValueNumeric="0"/>
+
+            <column name="occupied_chairs" type="int" defaultValueNumeric="0"/>
+
+            <column name="unoccupied_chairs" type="int" defaultValueNumeric="0"/>
+
+            <column name="occupied_benches" type="int" defaultValueNumeric="0"/>
+
+            <column name="unoccupied_benches" type="int" defaultValueNumeric="0"/>
+
+            <column name="occupied_couches" type="int" defaultValueNumeric="0"/>
+
+            <column name="unoccupied_couches" type="int" defaultValueNumeric="0"/>
+
+            <column name="persons_sitting" type="int" defaultValueNumeric="0"/>
+
+            <column name="confidence_threshold" type="double precision">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="varchar(50)"/>
+
+            <column name="error_message" type="text"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone"/>
+
+            <column name="created_by" type="varchar(50)"/>
+
+            <column name="updated_by" type="varchar(50)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="frame"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="042-add-frame-foreign-keys" author="developer">
+        <comment>Add foreign key constraints from frame to video and stream</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="frame"
+                baseColumnNames="video_id"
+                constraintName="fk_frame_video"
+                referencedTableName="video"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="frame"
+                baseColumnNames="stream_id"
+                constraintName="fk_frame_stream"
+                referencedTableName="stream"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="frame"
+                baseColumnNames="tenant_id"
+                constraintName="fk_frame_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="frame"
+                baseColumnNames="branch_id"
+                constraintName="fk_frame_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="frame"
+                    constraintName="fk_frame_video"/>
+            <dropForeignKeyConstraint
+                    baseTableName="frame"
+                    constraintName="fk_frame_stream"/>
+            <dropForeignKeyConstraint
+                    baseTableName="frame"
+                    constraintName="fk_frame_tenant"/>
+            <dropForeignKeyConstraint
+                    baseTableName="frame"
+                    constraintName="fk_frame_branch"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="043-add-frame-indexes" author="developer">
+        <comment>Add indexes on frame table for performance optimization</comment>
+
+        <createIndex indexName="idx_frame_video_id" tableName="frame">
+            <column name="video_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_frame_stream_id" tableName="frame">
+            <column name="stream_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_frame_tenant_id" tableName="frame">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_frame_branch_id" tableName="frame">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_frame_created_at" tableName="frame">
+            <column name="created_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_frame_video_id" tableName="frame"/>
+            <dropIndex indexName="idx_frame_stream_id" tableName="frame"/>
+            <dropIndex indexName="idx_frame_created_at" tableName="frame"/>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

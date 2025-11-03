@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!-- Include all changelog files -->
+    <include file="db/changelog/changesets/tenant-table.xml"/>
+    <include file="db/changelog/changesets/branch-table.xml"/>
+    <include file="db/changelog/changesets/zone-table.xml"/>
+    <include file="db/changelog/changesets/camera-table.xml"/>
+    <include file="db/changelog/changesets/table-table.xml"/>
+    <include file="db/changelog/changesets/stream-table.xml"/>
+    <include file="db/changelog/changesets/video-table.xml"/>
+    <include file="db/changelog/changesets/frame-table.xml"/>
+
+</databaseChangeLog>

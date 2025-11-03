@@ -1,0 +1,325 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="024-create-table-sequence" author="kilani">
+        <comment>Create sequence for table table</comment>
+
+        <createSequence
+                sequenceName="table_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="table_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="024-create-table-table" author="kilani">
+        <comment>Create table for tableEntity with foreign keys to camera, zone, branch, and tenant</comment>
+
+        <createTable tableName="table_entity">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_table"/>
+            </column>
+
+            <column name="camera_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="zone_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="branch_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="table_number" type="int">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="label" type="varchar(100)"/>
+
+            <!-- Audit columns -->
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="updated_by" type="varchar(100)"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="table_entity"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="025-create-table-coordinates-sequence" author="kilani">
+        <comment>Create sequence for table_coordinates table</comment>
+
+        <createSequence
+                sequenceName="table_coordinates_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="table_coordinates_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="025-create-table-coordinates-table" author="kilani">
+        <comment>Create table_coordinates table with foreign key to table</comment>
+
+        <createTable tableName="table_coordinates">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_table_coordinates"/>
+            </column>
+
+            <column name="table_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="x" type="float">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="y" type="float">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="table_coordinates"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="026-add-table-foreign-keys" author="kilani">
+        <comment>Add foreign key constraints from table to camera, zone, branch, and tenant</comment>
+
+        <addForeignKeyConstraint
+                baseTableName="table_entity"
+                baseColumnNames="camera_id"
+                constraintName="fk_table_camera"
+                referencedTableName="camera"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="table_entity"
+                baseColumnNames="zone_id"
+                constraintName="fk_table_zone"
+                referencedTableName="zone"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="table_entity"
+                baseColumnNames="branch_id"
+                constraintName="fk_table_branch"
+                referencedTableName="branch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="table_entity"
+                baseColumnNames="tenant_id"
+                constraintName="fk_table_tenant"
+                referencedTableName="tenant"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="table_coordinates"
+                baseColumnNames="table_id"
+                constraintName="fk_table_coordinates_table"
+                referencedTableName="table_entity"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="table_entity"
+                    constraintName="fk_table_camera"/>
+            <dropForeignKeyConstraint
+                    baseTableName="table_entity"
+                    constraintName="fk_table_zone"/>
+            <dropForeignKeyConstraint
+                    baseTableName="table_entity"
+                    constraintName="fk_table_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="table_entity"
+                    constraintName="fk_table_tenant"/>
+            <dropForeignKeyConstraint
+                    baseTableName="table_coordinates"
+                    constraintName="fk_table_coordinates_table"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="027-add-table-indexes" author="kilani">
+        <comment>Add indexes on table for table_entity for performance optimization</comment>
+
+        <createIndex indexName="idx_table_camera_id" tableName="table_entity">
+            <column name="camera_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_table_zone_id" tableName="table_entity">
+            <column name="zone_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_table_branch_id" tableName="table_entity">
+            <column name="branch_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_table_tenant_id" tableName="table_entity">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_table_coordinates_table_id" tableName="table_coordinates">
+            <column name="table_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_table_camera_id" tableName="table_entity"/>
+            <dropIndex indexName="idx_table_zone_id" tableName="table_entity"/>
+            <dropIndex indexName="idx_table_branch_id" tableName="table_entity"/>
+            <dropIndex indexName="idx_table_tenant_id" tableName="table_entity"/>
+            <dropIndex indexName="idx_table_coordinates_table_id" tableName="table_coordinates"/>
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="028-add-table-constraints" author="kilani">
+        <comment>Add unique constraint on table number, camera_id, zone_id, branch_id, and tenant_id combination</comment>
+
+        <addUniqueConstraint
+                tableName="table_entity"
+                columnNames="table_number, camera_id, zone_id, branch_id, tenant_id"
+                constraintName="uk_table_number_camera_zone_branch_tenant"/>
+
+        <rollback>
+            <dropUniqueConstraint
+                    tableName="table_entity"
+                    constraintName="uk_table_number_camera_zone_branch_tenant"/>
+        </rollback>
+    </changeSet>
+
+
+
+    <changeSet id="030-insert-table-test-data" author="kilani" context="dev,test">
+        <comment>Insert test data for table and table_coordinates - only runs in dev/test environments</comment>
+
+        <!-- Table 1: Camera 1 (Main Entrance), Zone 1 (FLOOR-1), Branch 1 (NYC) -->
+        <insert tableName="table_entity">
+            <column name="id" valueSequenceNext="table_seq"/>
+            <column name="camera_id" valueNumeric="1"/>
+            <column name="zone_id" valueNumeric="1"/>
+            <column name="branch_id" valueNumeric="1"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="table_number" valueNumeric="1"/>
+            <column name="label" value="Reception Table"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="kilani"/>
+            <column name="updated_by" value="kilani"/>
+        </insert>
+
+        <!-- Coordinates for Table 1 (4-corner rectangle) -->
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="1"/>
+            <column name="x" valueNumeric="1"/>
+            <column name="y" valueNumeric="500"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="1"/>
+            <column name="x" valueNumeric="822"/>
+            <column name="y" valueNumeric="490"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="1"/>
+            <column name="x" valueNumeric="1080"/>
+            <column name="y" valueNumeric="1073"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="1"/>
+            <column name="x" valueNumeric="1"/>
+            <column name="y" valueNumeric="1073"/>
+        </insert>
+
+        <!-- Table 2-->
+        <insert tableName="table_entity">
+            <column name="id" valueSequenceNext="table_seq"/>
+            <column name="camera_id" valueNumeric="1"/>
+            <column name="zone_id" valueNumeric="1"/>
+            <column name="branch_id" valueNumeric="1"/>
+            <column name="tenant_id" valueComputed="1"/>
+            <column name="table_number" valueNumeric="2"/>
+            <column name="label" value="Hot Desk 2"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by" value="kilani"/>
+            <column name="updated_by" value="kilani"/>
+        </insert>
+
+        <!-- Coordinates for Table 2 -->
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="2"/>
+            <column name="x" valueNumeric="866"/>
+            <column name="y" valueNumeric="250"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="2"/>
+            <column name="x" valueNumeric="1471"/>
+            <column name="y" valueNumeric="171"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="2"/>
+            <column name="x" valueNumeric="1684"/>
+            <column name="y" valueNumeric="718"/>
+        </insert>
+
+        <insert tableName="table_coordinates">
+            <column name="id" valueSequenceNext="table_coordinates_seq"/>
+            <column name="table_id" valueNumeric="2"/>
+            <column name="x" valueNumeric="925"/>
+            <column name="y" valueNumeric="837"/>
+        </insert>
+
+
+        <rollback>
+            <delete tableName="table_coordinates">
+                <where>table_id IN (1, 2, 3, 4, 5, 6, 7, 8)</where>
+            </delete>
+            <delete tableName="table_entity">
+                <where>tenant_id IN (1 )
+                </where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>
