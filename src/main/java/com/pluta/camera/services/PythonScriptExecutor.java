@@ -43,6 +43,7 @@ public class PythonScriptExecutor {
                 pythonExecutable,  // ✅ Use configured path instead of "python3"
                 scriptPath,
                 imagePath,
+                "-o","/Users/abdulrahman/Desktop/POC/CameraAi/video-procesing/labeled",
                 "--confidence", confidenceThreshold.toString(),
                 "--zone-threshold",zoneConfidenceThreshold.toString(),
                 "--camera-id",cameraId.toString(),

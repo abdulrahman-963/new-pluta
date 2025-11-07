@@ -423,7 +423,7 @@ class TableChairDetector:
         cv2.imwrite(output_path, annotated_image)
         return output_path
 
-    def process_image_for_service(self, image_path, camera_id=None, show_all_detections=False):
+    def process_image_for_service(self, image_path, camera_id=None, show_all_detections=False, output_dir=None):
         """
         Process a single image and return results in JSON format
 
@@ -431,6 +431,7 @@ class TableChairDetector:
             image_path: Path to input image file
             camera_id: Camera identifier for zone filtering
             show_all_detections: If True, show all detected objects in annotated image (even those outside zone)
+            output_dir: Directory to save output files (default: ./labeled_images)
 
         Returns:
             dict: Analysis results in JSON-serializable format
@@ -505,8 +506,8 @@ class TableChairDetector:
             persons_sitting = len(sitting_person_indices)
 
             # Save annotated image
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            output_dir = os.path.join(script_dir, '/Users/abdulrahman/Desktop/POC/CameraAi/video-procesing/labeled_images')
+            if output_dir is None:
+                output_dir = './labeled_images'
             # Use all_detected_objects for annotation if available, otherwise use filtered detected_objects
             objects_to_draw = all_detected_objects if all_detected_objects is not None else detected_objects
             annotated_path = self.save_annotated_image(image, objects_to_draw, image_path, output_dir, camera_id, zone_table_id)
@@ -574,6 +575,7 @@ Examples:
     parser.add_argument('--zone-threshold', type=float, default=0.7, help='Minimum percentage of object in zone to be counted (default: 0.7)')
     parser.add_argument('--show-all', action='store_true', help='Show all detected objects in annotated image (even those outside zone)')
     parser.add_argument('--output-json', action='store_true', help='Output results in JSON format (default: always outputs JSON)')
+    parser.add_argument('--output-dir', '-o', default=None, help='Directory to save output files (default: ./labeled_images)')
 
     args = parser.parse_args()
 
@@ -591,7 +593,7 @@ Examples:
             detector.add_camera_zone(args.camera_id, zone_points, args.table_id)
 
         # Process image
-        results = detector.process_image_for_service(args.image_path, args.camera_id, args.show_all)
+        results = detector.process_image_for_service(args.image_path, args.camera_id, args.show_all, args.output_dir)
         print(json.dumps(results, indent=2))
         
         if results.get("status") == "COMPLETED":
