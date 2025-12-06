@@ -41,7 +41,7 @@ public class VideoProcessingService {
     private final CameraRepository cameraRepository;
     private final ZoneRepository zoneRepository;
 
-    public Long uploadAndProcessVideo(MultipartFile file, Long tenantId, Long branchId, Long zoneId, Long cameraId) throws Exception {
+    public Long uploadAndProcessVideo(MultipartFile file, Long tenantId, Long branchId, Long zoneId, Long cameraId) throws IOException {
         // Create directories if they don't exist
         createDirectories();
 
@@ -65,7 +65,7 @@ public class VideoProcessingService {
                                 branchId, tenantId)));
 
         // Validate zone exists and belongs to branch
-        Zone zone = zoneRepository.findByBranchIdAndId(branchId, zoneId)
+        Zone zone = zoneRepository.findByTenantIdAndBranchIdAndId(tenantId, branchId, zoneId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Zone not found with id: %d for branch: %d",
                                 zoneId, branchId)));
@@ -100,6 +100,11 @@ public class VideoProcessingService {
 
     public List<VideoResponseDto> getVideos(Pageable pageable) {
         return videoMapper.toDTOList(videoRepository.findAll(pageable).getContent());
+    }
+
+    public List<VideoResponseDto> getVideosByTenantAndBranch(Pageable page, Long tenantId, Long branchId) {
+        List<Video> videos = videoRepository.findByTenantIdAndBranchId(page, tenantId, branchId);
+        return videoMapper.toDTOList(videos);
     }
 
     public VideoResponseDto getVideoDetails(Long videoId) {

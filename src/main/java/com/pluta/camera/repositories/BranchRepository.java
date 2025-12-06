@@ -12,6 +12,9 @@ import java.util.Optional;
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long>, JpaSpecificationExecutor<Branch> {
 
+
+    List<Branch> findByTenantIdAndIdIn(Long tenantId, List<Long> ids);
+
     List<Branch> findByTenantId(Long tenantId);
 
     Optional<Branch> findByTenantIdAndCode(Long tenantId, String code);
@@ -26,9 +29,12 @@ public interface BranchRepository extends JpaRepository<Branch, Long>, JpaSpecif
 
     List<Branch> findByTenantIdAndCity(Long tenantId, String city);
 
+
     boolean existsByTenantIdAndCode(Long tenantId, String code);
 
     long countByTenantId(Long tenantId);
 
     void deleteByTenantId(Long tenantId);
+
+
 }

@@ -26,9 +26,13 @@ public class BranchDTO extends BaseDTO {
     @Size(max = 255, message = "Code must not exceed 255 characters")
     private String code;
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "English Name is required")
     @Size(max = 255, message = "Name must not exceed 255 characters")
-    private String name;
+    private String englishName;
+
+    @NotBlank(message = "Arabic Name is required")
+    @Size(max = 255, message = "Name must not exceed 255 characters")
+    private String arabicName;
 
     @NotBlank(message = "Country is required")
     @Size(max = 50, message = "Country must not exceed 50 characters")

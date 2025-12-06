@@ -30,8 +30,11 @@ public class Tenant extends BaseEntity {
     @Column(name = "code", nullable = false)
     private String code;
 
-    @Column(name = "name", nullable = false, length = 255)
-    private String name;
+    @Column(name = "english_name", nullable = false)
+    private String englishName;
+
+    @Column(name = "arabic_name", nullable = false)
+    private String arabicName;
 
     @Column(name = "contact_email", length = 255)
     private String contactEmail;

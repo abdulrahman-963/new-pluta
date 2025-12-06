@@ -2,13 +2,13 @@ package com.pluta.camera.repositories;
 
 import com.pluta.camera.entities.Video;
 import com.pluta.camera.enums.ProcessingStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
     List<Video> findByUpdatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
@@ -36,5 +36,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Query("SELECT SUM(v.duration) FROM Video v WHERE v.duration IS NOT NULL")
     Double getTotalDuration();
+
+    List<Video> findByTenantIdAndBranchId(Pageable page, Long tenantId, Long branchId);
 
 }

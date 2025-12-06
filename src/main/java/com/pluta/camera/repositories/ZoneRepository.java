@@ -16,6 +16,8 @@ public interface ZoneRepository extends JpaRepository<Zone, Long>, JpaSpecificat
 
     Optional<Zone> findByBranchIdAndCode(Long branchId, String code);
 
+    Optional<Zone> findByTenantIdAndBranchIdAndId(Long tenantId,Long branchId, Long id);
+
     Optional<Zone> findByBranchIdAndId(Long branchId, Long id);
 
     List<Zone> findByCode(String code);

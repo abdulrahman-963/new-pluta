@@ -14,16 +14,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/cameras")
+@RequestMapping("/v1/cameras")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Camera Management", description = "APIs for managing cameras")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class CameraController {
 
     private final CameraService cameraService;
@@ -42,15 +44,7 @@ public class CameraController {
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable
     ) {
         log.debug("REST request to get all Cameras");
-        Page<CameraDTO> cameras = cameraService.findAll(pageable);
-        return ResponseEntity.ok(cameras);
-    }
-
-    @GetMapping("/all")
-    @Operation(summary = "Get all cameras without pagination")
-    public ResponseEntity<List<CameraDTO>> getAllCamerasNoPaging() {
-        log.debug("REST request to get all Cameras without pagination");
-        List<CameraDTO> cameras = cameraService.findAll();
+        Page<CameraDTO> cameras = cameraService.findAllByTenantIdAndBranchId(pageable);
         return ResponseEntity.ok(cameras);
     }
 
@@ -62,32 +56,6 @@ public class CameraController {
         return ResponseEntity.ok(cameras);
     }
 
-    @GetMapping("/branch/{branchId}")
-    @Operation(summary = "Get all cameras for a branch")
-    public ResponseEntity<List<CameraDTO>> getCamerasByBranchId(@PathVariable Long branchId) {
-        log.debug("REST request to get Cameras for branch : {}", branchId);
-        List<CameraDTO> cameras = cameraService.findByBranchId(branchId);
-        return ResponseEntity.ok(cameras);
-    }
-
-    @GetMapping("/tenant/{tenantId}")
-    @Operation(summary = "Get all cameras for a tenant")
-    public ResponseEntity<List<CameraDTO>> getCamerasByTenantId(@PathVariable Long tenantId) {
-        log.debug("REST request to get Cameras for tenant : {}", tenantId);
-        List<CameraDTO> cameras = cameraService.findByTenantId(tenantId);
-        return ResponseEntity.ok(cameras);
-    }
-
-    @GetMapping("/tenant/{tenantId}/branch/{branchId}")
-    @Operation(summary = "Get cameras by tenant and branch")
-    public ResponseEntity<List<CameraDTO>> getCamerasByTenantIdAndBranchId(
-            @PathVariable Long tenantId,
-            @PathVariable Long branchId
-    ) {
-        log.debug("REST request to get Cameras for tenant: {} and branch: {}", tenantId, branchId);
-        List<CameraDTO> cameras = cameraService.findByTenantIdAndBranchId(tenantId, branchId);
-        return ResponseEntity.ok(cameras);
-    }
 
     @GetMapping("/tenant/{tenantId}/branch/{branchId}/zone/{zoneId}")
     @Operation(summary = "Get cameras by tenant, branch and zone")
@@ -168,15 +136,8 @@ public class CameraController {
     @Operation(summary = "Count cameras for a branch")
     public ResponseEntity<Long> countCamerasByBranchId(@PathVariable Long branchId) {
         log.debug("REST request to count Cameras for branch : {}", branchId);
-        long count = cameraService.countByBranchId(branchId);
+        long count = cameraService.countByTenantIdAndBranchId();
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/tenant/{tenantId}/count")
-    @Operation(summary = "Count cameras for a tenant")
-    public ResponseEntity<Long> countCamerasByTenantId(@PathVariable Long tenantId) {
-        log.debug("REST request to count Cameras for tenant : {}", tenantId);
-        long count = cameraService.countByTenantId(tenantId);
-        return ResponseEntity.ok(count);
-    }
 }

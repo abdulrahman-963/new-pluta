@@ -12,7 +12,10 @@ import com.pluta.camera.repositories.BranchRepository;
 import com.pluta.camera.repositories.CameraRepository;
 import com.pluta.camera.repositories.TenantRepository;
 import com.pluta.camera.repositories.ZoneRepository;
+import com.pluta.camera.repositories.generics.GenericRepository;
+import com.pluta.camera.services.generics.ReadOnlyService;
 import com.pluta.camera.services.mappers.CameraMapper;
+import com.pluta.camera.services.mappers.GenericMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,7 +29,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class CameraService {
+public class CameraService extends ReadOnlyService<Camera,CameraDTO> {
 
     private final CameraRepository cameraRepository;
     private final ZoneRepository zoneRepository;
@@ -34,7 +37,18 @@ public class CameraService {
     private final TenantRepository tenantRepository;
     private final CameraMapper cameraMapper;
 
-    public CameraDTO findById(Long id) {
+
+    @Override
+    public GenericRepository<Camera> getGenericRepository() {
+        return this.cameraRepository;
+    }
+
+    @Override
+    public GenericMapper<Camera, CameraDTO> getGenericMapper() {
+        return this.cameraMapper;
+    }
+
+  /*  public CameraDTO findById(Long id) {
         log.debug("Finding camera by id: {}", id);
         Camera camera = cameraRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Camera not found with id: " + id));
@@ -51,14 +65,14 @@ public class CameraService {
         log.debug("Finding all cameras with pagination: {}", pageable);
         Page<Camera> cameras = cameraRepository.findAll(pageable);
         return cameras.map(cameraMapper::toDTO);
-    }
+    }*/
 
     public List<CameraDTO> findByZoneId(Long zoneId) {
         log.debug("Finding cameras by zone id: {}", zoneId);
         List<Camera> cameras = cameraRepository.findByZoneId(zoneId);
         return cameraMapper.toDTOList(cameras);
     }
-
+/*
     public List<CameraDTO> findByBranchId(Long branchId) {
         log.debug("Finding cameras by branch id: {}", branchId);
         List<Camera> cameras = cameraRepository.findByBranchId(branchId);
@@ -75,7 +89,7 @@ public class CameraService {
         log.debug("Finding cameras by tenant id: {} and branch id: {}", tenantId, branchId);
         List<Camera> cameras = cameraRepository.findByTenantIdAndBranchId(tenantId, branchId);
         return cameraMapper.toDTOList(cameras);
-    }
+    }*/
 
     public List<CameraDTO> findByTenantIdAndBranchIdAndZoneId(Long tenantId, Long branchId, Long zoneId) {
         log.debug("Finding cameras by tenant id: {}, branch id: {} and zone id: {}", tenantId, branchId, zoneId);
@@ -187,11 +201,12 @@ public class CameraService {
         return cameraRepository.countByZoneId(zoneId);
     }
 
+/*
     public long countByBranchId(Long branchId) {
         return cameraRepository.countByBranchId(branchId);
     }
 
     public long countByTenantId(Long tenantId) {
         return cameraRepository.countByTenantId(tenantId);
-    }
+    }*/
 }

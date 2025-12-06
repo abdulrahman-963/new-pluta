@@ -3,12 +3,10 @@ package com.pluta.camera.entities;
 
 import com.pluta.camera.enums.CameraStatus;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-
-import java.util.UUID;
+import org.hibernate.annotations.*;
 
 @Entity
 @Table(name = "camera")

@@ -15,7 +15,11 @@
             <column name="code" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name" type="varchar(255)">
+            <column name="english_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="arabic_name" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="contact_email" type="varchar(255)"/>
@@ -47,10 +51,6 @@
     <changeSet id="002-add-tenant-indexes" author="kilani">
         <comment>Add indexes on tenant table for performance optimization</comment>
 
-        <createIndex indexName="idx_tenant_name" tableName="tenant">
-            <column name="name"/>
-        </createIndex>
-
         <createIndex indexName="idx_tenant_code" tableName="tenant">
             <column name="code"/>
         </createIndex>
@@ -64,7 +64,6 @@
         </createIndex>
 
         <rollback>
-            <dropIndex indexName="idx_tenant_name" tableName="tenant"/>
             <dropIndex indexName="idx_tenant_status" tableName="tenant"/>
             <dropIndex indexName="idx_tenant_code" tableName="tenant"/>
             <dropIndex indexName="idx_tenant_created_at" tableName="tenant"/>
@@ -76,8 +75,13 @@
 
         <addUniqueConstraint
                 tableName="tenant"
-                columnNames="name"
-                constraintName="uk_tenant_name"/>
+                columnNames="english_name"
+                constraintName="uk_tenant_english_name"/>
+
+        <addUniqueConstraint
+                tableName="tenant"
+                columnNames="arabic_name"
+                constraintName="uk_tenant_arabic_name"/>
 
         <addUniqueConstraint
                 tableName="tenant"
@@ -87,7 +91,10 @@
         <rollback>
             <dropUniqueConstraint
                     tableName="tenant"
-                    constraintName="uk_tenant_name"/>
+                    constraintName="uk_tenant_english_name"/>
+            <dropUniqueConstraint
+                    tableName="tenant"
+                    constraintName="uk_tenant_arabic_name"/>
             <dropUniqueConstraint
                     tableName="tenant"
                     constraintName="uk_tenant_code"/>
@@ -105,7 +112,8 @@
     <insert tableName="tenant">
         <column name="id" valueSequenceNext="tenant_seq"/>
         <column name="code" value="TEST1"/>
-        <column name="name" value="TEST1 Corporation"/>
+        <column name="english_name" value="TEST1 Corporation"/>
+        <column name="arabic_name" value="arabic TEST1 Corporation"/>
         <column name="contact_email" value="contact@Pluta.com"/>
         <column name="plan" value="ENTERPRISE"/>
         <column name="status" value="ACTIVE"/>
@@ -119,7 +127,8 @@
         <insert tableName="tenant">
             <column name="id" valueSequenceNext="tenant_seq"/>
             <column name="code" value="TEST2"/>
-            <column name="name" value="TEST2 Corporation"/>
+            <column name="english_name" value="TEST2 Corporation"/>
+            <column name="arabic_name" value="arabic TEST2 Corporation"/>
             <column name="contact_email" value="contact@Pluta.com"/>
             <column name="plan" value="ENTERPRISE"/>
             <column name="status" value="ACTIVE"/>

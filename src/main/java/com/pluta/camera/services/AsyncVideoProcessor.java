@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +47,8 @@ public class AsyncVideoProcessor {
         if (video == null) {
             return;
         }
+
+        log.info("Starting video processing");
 
         try {
             // Update status to processing
@@ -78,16 +81,17 @@ public class AsyncVideoProcessor {
             videoRepository.save(video); // This will also save the ImageAnalysisResult entities due to cascade
 
 
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException  e) {
             log.error("Error analyzing video: {}", e.getMessage(), e);
             video.setStatus(ProcessingStatus.FAILED);
             video.setErrorMessage(e.getMessage());
             video.setProcessingCompletedAt(LocalDateTime.now());
             videoRepository.save(video);
         }
+        log.info("End video processing");
     }
 
-    private List<Frame> extractFrames(String videoPath, Video video) throws Exception {
+    private List<Frame> extractFrames(String videoPath, Video video) throws IOException, InterruptedException {
         List<Frame> extractedFrames = new ArrayList<>();
 
         // Get video duration first
@@ -137,7 +141,7 @@ public class AsyncVideoProcessor {
         return extractedFrames;
     }
 
-    private double getVideoDuration(String videoPath) throws Exception {
+    private double getVideoDuration(String videoPath) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add("ffprobe");
         command.add("-v");
@@ -168,7 +172,7 @@ public class AsyncVideoProcessor {
         return Double.parseDouble(output.toString().trim());
     }
 
-    private boolean executeFFmpegCommand(List<String> command) throws Exception {
+    private boolean executeFFmpegCommand(List<String> command) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
 

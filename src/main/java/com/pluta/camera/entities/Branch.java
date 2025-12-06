@@ -33,8 +33,11 @@ public class Branch extends BaseEntity {
     @Column(name = "code", nullable = false)
     private String code;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "english_name", nullable = false)
+    private String englishName;
+
+    @Column(name = "arabic_name", nullable = false)
+    private String arabicName;
 
     @Column(name = "country", nullable = false, length = 50)
     private String country;

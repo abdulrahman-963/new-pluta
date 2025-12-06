@@ -13,15 +13,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+//@RestController
 @RequestMapping("/api/v1/streams")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Stream Management", description = "APIs for managing camera streams")
+@PreAuthorize("hasRole('ADMIN')")
 public class StreamController {
 
     private final StreamService streamService;
@@ -42,7 +44,7 @@ public class StreamController {
         return ResponseEntity.ok(stream);
     }
 
-    @GetMapping
+  /*  @GetMapping
     @Operation(summary = "Get all streams with pagination")
     public ResponseEntity<Page<StreamDTO>> getAllStreams(
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable
@@ -58,7 +60,7 @@ public class StreamController {
         log.debug("REST request to get all Streams without pagination");
         List<StreamDTO> streams = streamService.findAll();
         return ResponseEntity.ok(streams);
-    }
+    }*/
 
     @GetMapping("/zone/{zoneId}")
     @Operation(summary = "Get all streams for a zone")

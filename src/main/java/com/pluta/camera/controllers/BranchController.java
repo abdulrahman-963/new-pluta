@@ -13,47 +13,43 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/branches")
+@RequestMapping("/v1/branches")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Branch Management", description = "APIs for managing branches")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
 public class BranchController {
 
     private final BranchService branchService;
 
+    @GetMapping("/all-by-user")
+    @Operation(summary = "Get branches by user")
+    public ResponseEntity<List<BranchDTO>> getAllBranches() {
+
+        log.debug("REST request to get Branches by IDs ");
+        List<BranchDTO> branches = branchService.getAllBranches();
+        return ResponseEntity.ok(branches);
+    }
+
+    /*
     @GetMapping("/{id}")
     @Operation(summary = "Get branch by ID")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> getBranchById(@PathVariable Long id) {
         log.debug("REST request to get Branch : {}", id);
         BranchDTO branch = branchService.findById(id);
         return ResponseEntity.ok(branch);
     }
 
-    @GetMapping
-    @Operation(summary = "Get all branches with pagination")
-    public ResponseEntity<Page<BranchDTO>> getAllBranches(
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable
-    ) {
-        log.debug("REST request to get all Branches");
-        Page<BranchDTO> branches = branchService.findAll(pageable);
-        return ResponseEntity.ok(branches);
-    }
-
-    @GetMapping("/all")
-    @Operation(summary = "Get all branches without pagination")
-    public ResponseEntity<List<BranchDTO>> getAllBranchesNoPaging() {
-        log.debug("REST request to get all Branches without pagination");
-        List<BranchDTO> branches = branchService.findAll();
-        return ResponseEntity.ok(branches);
-    }
-
     @GetMapping("/tenant/{tenantId}")
     @Operation(summary = "Get all branches for a tenant")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<List<BranchDTO>> getBranchesByTenantId(@PathVariable Long tenantId) {
         log.debug("REST request to get Branches for tenant : {}", tenantId);
         List<BranchDTO> branches = branchService.findByTenantId(tenantId);
@@ -62,6 +58,7 @@ public class BranchController {
 
     @GetMapping("/tenant/{tenantId}/code/{code}")
     @Operation(summary = "Get branch by tenant ID and code")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> getBranchByTenantIdAndCode(
             @PathVariable Long tenantId,
             @PathVariable String code
@@ -73,6 +70,7 @@ public class BranchController {
 
     @GetMapping("/tenant/{tenantId}/branch/{id}")
     @Operation(summary = "Get branch by tenant ID and branch ID")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> getBranchByTenantIdAndId(
             @PathVariable Long tenantId,
             @PathVariable Long id
@@ -84,6 +82,7 @@ public class BranchController {
 
     @GetMapping("/country/{country}")
     @Operation(summary = "Get branches by country")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<List<BranchDTO>> getBranchesByCountry(@PathVariable String country) {
         log.debug("REST request to get Branches by country : {}", country);
         List<BranchDTO> branches = branchService.findByCountry(country);
@@ -92,6 +91,7 @@ public class BranchController {
 
     @GetMapping("/city/{city}")
     @Operation(summary = "Get branches by city")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<List<BranchDTO>> getBranchesByCity(@PathVariable String city) {
         log.debug("REST request to get Branches by city : {}", city);
         List<BranchDTO> branches = branchService.findByCity(city);
@@ -100,6 +100,7 @@ public class BranchController {
 
     @GetMapping("/tenant/{tenantId}/country/{country}")
     @Operation(summary = "Get branches by tenant ID and country")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<List<BranchDTO>> getBranchesByTenantIdAndCountry(
             @PathVariable Long tenantId,
             @PathVariable String country
@@ -111,6 +112,7 @@ public class BranchController {
 
     @GetMapping("/tenant/{tenantId}/city/{city}")
     @Operation(summary = "Get branches by tenant ID and city")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<List<BranchDTO>> getBranchesByTenantIdAndCity(
             @PathVariable Long tenantId,
             @PathVariable String city
@@ -122,6 +124,7 @@ public class BranchController {
 
     @PostMapping
     @Operation(summary = "Create a new branch")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> createBranch(@Valid @RequestBody BranchDTO createDTO) {
         log.debug("REST request to create Branch : {}", createDTO);
         BranchDTO createdBranch = branchService.create(createDTO);
@@ -130,6 +133,7 @@ public class BranchController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing branch")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> updateBranch(
             @PathVariable Long id,
             @Valid @RequestBody BranchDTO updateDTO
@@ -141,6 +145,7 @@ public class BranchController {
 
     @PutMapping("/tenant/{tenantId}/branch/{id}")
     @Operation(summary = "Update branch by tenant ID and branch ID")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<BranchDTO> updateBranchByTenantIdAndId(
             @PathVariable Long tenantId,
             @PathVariable Long id,
@@ -153,6 +158,7 @@ public class BranchController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a branch")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<Void> deleteBranch(@PathVariable Long id) {
         log.debug("REST request to delete Branch : {}", id);
         branchService.delete(id);
@@ -161,6 +167,7 @@ public class BranchController {
 
     @DeleteMapping("/tenant/{tenantId}/branch/{id}")
     @Operation(summary = "Delete branch by tenant ID and branch ID")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<Void> deleteBranchByTenantIdAndId(
             @PathVariable Long tenantId,
             @PathVariable Long id
@@ -172,6 +179,7 @@ public class BranchController {
 
     @GetMapping("/{id}/exists")
     @Operation(summary = "Check if branch exists")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<Boolean> branchExists(@PathVariable Long id) {
         log.debug("REST request to check if Branch exists : {}", id);
         boolean exists = branchService.existsById(id);
@@ -180,9 +188,10 @@ public class BranchController {
 
     @GetMapping("/tenant/{tenantId}/count")
     @Operation(summary = "Count branches for a tenant")
+    @PreAuthorize("hasRole('SUPER-ADMIN')")
     public ResponseEntity<Long> countBranchesByTenantId(@PathVariable Long tenantId) {
         log.debug("REST request to count Branches for tenant : {}", tenantId);
         long count = branchService.countByTenantId(tenantId);
         return ResponseEntity.ok(count);
-    }
+    }*/
 }

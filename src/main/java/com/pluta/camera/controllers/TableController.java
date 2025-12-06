@@ -13,15 +13,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+//@RestController
 @RequestMapping("/api/v1/tables")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Table Management", description = "APIs for managing tables with coordinates")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class TableController {
 
     private final TableService tableService;
@@ -34,6 +36,7 @@ public class TableController {
         return ResponseEntity.ok(table);
     }
 
+    /*
     @GetMapping
     @Operation(summary = "Get all tables with pagination")
     public ResponseEntity<Page<TableDTO>> getAllTables(
@@ -50,7 +53,7 @@ public class TableController {
         log.debug("REST request to get all Tables without pagination");
         List<TableDTO> tables = tableService.findAll();
         return ResponseEntity.ok(tables);
-    }
+    }*/
 
     @GetMapping("/camera/{cameraId}")
     @Operation(summary = "Get all tables for a camera")

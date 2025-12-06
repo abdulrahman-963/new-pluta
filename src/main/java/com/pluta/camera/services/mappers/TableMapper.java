@@ -22,6 +22,6 @@ public interface TableMapper extends GenericMapper<TableEntity, TableDTO>{
     @Mapping(source = "branch.id", target = "branchId")
     @Mapping(source = "branch.code", target = "branchCode")
     @Mapping(source = "tenant.id", target = "tenantId")
-    @Mapping(source = "tenant.name", target = "tenantName")
+    @Mapping(source = "tenant.englishName", target = "tenantName")
     TableDTO toDTO(TableEntity entity);
 }

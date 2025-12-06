@@ -35,7 +35,11 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="name" type="varchar(255)">
+            <column name="english_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="arabic_name" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
 
@@ -149,7 +153,8 @@
             <column name="id" valueSequenceNext="branch_seq"/>
             <column name="tenant_id" valueComputed="1"/>
             <column name="code" value="RYD-001"/>
-            <column name="name" value="Riyadh Headquarters"/>
+            <column name="english_name" value="Riyadh Headquarters"/>
+            <column name="arabic_name" value="الرياض الفرع الرئيسي"/>
             <column name="country" value="Saudi Arabia"/>
             <column name="city" value="Riyadh"/>
             <column name="address" value="123 Alulea, RD 10005"/>
@@ -165,7 +170,8 @@
             <column name="id" valueSequenceNext="branch_seq"/>
             <column name="tenant_id" valueComputed="1"/>
             <column name="code" value="RYD-002"/>
-            <column name="name" value="Heteen"/>
+            <column name="english_name" value="Heteen"/>
+            <column name="arabic_name" value="حطين"/>
             <column name="country" value="Saudi Arabia"/>
             <column name="city" value="Riyadh"/>
             <column name="address" value="123 Heteen, RD 10005"/>
@@ -182,7 +188,8 @@
             <column name="id" valueSequenceNext="branch_seq"/>
             <column name="tenant_id" valueComputed="2"/>
             <column name="code" value="TEST-001"/>
-            <column name="name" value="TEST Headquarters"/>
+            <column name="english_name" value="Riyadh Headquarters"/>
+            <column name="arabic_name" value="الرياض الفرع الرئيسي"/>
             <column name="country" value="Saudi Arabia"/>
             <column name="city" value="Riyadh"/>
             <column name="address" value="123 Alulea, RD 10005"/>
@@ -196,7 +203,7 @@
 
         <rollback>
             <delete tableName="branch">
-                <where>tenant_id IN (1)
+                <where>tenant_id IN (1,2)
                 </where>
             </delete>
         </rollback>

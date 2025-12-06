@@ -2,6 +2,7 @@ package com.pluta.camera.services;
 
 
 
+import com.pluta.camera.context.TenantContext;
 import com.pluta.camera.dtos.BranchDTO;
 import com.pluta.camera.entities.Branch;
 import com.pluta.camera.entities.Tenant;
@@ -27,7 +28,15 @@ public class BranchService {
     private final BranchRepository branchRepository;
     private final TenantRepository tenantRepository;
     private final BranchMapper branchMapper;
+    private final TokenService tokenService;
 
+
+    public List<BranchDTO> getAllBranches() {
+        List<Branch> branches = branchRepository.findByTenantIdAndIdIn(TenantContext.getTenantId(),tokenService.getCurrentUserBranches());
+        return branchMapper.toDTOList(branches);
+    }
+
+/*
     public BranchDTO findById(Long id) {
         log.debug("Finding branch by id: {}", id);
         Branch branch = branchRepository.findById(id)
@@ -198,5 +207,5 @@ public class BranchService {
 
     public long countByTenantId(Long tenantId) {
         return branchRepository.countByTenantId(tenantId);
-    }
+    }*/
 }
