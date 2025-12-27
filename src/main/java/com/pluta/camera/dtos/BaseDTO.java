@@ -1,6 +1,7 @@
 package com.pluta.camera.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,13 +12,17 @@ import java.time.OffsetDateTime;
 @Setter
 public abstract class BaseDTO implements Serializable {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private OffsetDateTime createdAt;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private OffsetDateTime updatedAt;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String createdBy;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String updatedBy;
 }

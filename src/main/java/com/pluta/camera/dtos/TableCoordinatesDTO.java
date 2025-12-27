@@ -1,5 +1,6 @@
 package com.pluta.camera.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,10 @@ import lombok.*;
 @Builder
 public class TableCoordinatesDTO {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long tableId;
 
     @NotNull(message = "X coordinate is required")

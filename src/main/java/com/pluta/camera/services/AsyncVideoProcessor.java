@@ -2,24 +2,19 @@ package com.pluta.camera.services;
 
 
 import com.pluta.camera.entities.Frame;
-import com.pluta.camera.entities.ImageAnalysisResult;
 import com.pluta.camera.entities.Video;
 import com.pluta.camera.enums.ProcessingStatus;
 import com.pluta.camera.repositories.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +57,7 @@ public class AsyncVideoProcessor {
 
             for(Frame f : frames){
                 frameService.frameAnalysis(new File(f.getAnnotatedImagePath()), 0.4, 0.7,
-                        video,null);
+                        video,null,f.getFrameOffsetSeconds());
             }
 
 
@@ -134,6 +129,7 @@ public class AsyncVideoProcessor {
                 frame.setAnnotatedImagePath(outputPath);
                 frame.setResolution("1920x1080"); // Set based on your scaling
                 frame.setVideo(video);
+                frame.setFrameOffsetSeconds(timePoint);
                 extractedFrames.add(frame);
             }
         }

@@ -17,5 +17,7 @@
     <include file="db/changelog/changesets/stream-table.xml"/>
     <include file="db/changelog/changesets/video-table.xml"/>
     <include file="db/changelog/changesets/frame-table.xml"/>
+    <include file="/db/changelog/changesets/widget-group-table.xml"/>
+    <include file="db/changelog/changesets/widget-table.xml"/>
 
 </databaseChangeLog>

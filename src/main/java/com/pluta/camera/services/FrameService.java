@@ -3,7 +3,10 @@ package com.pluta.camera.services;
 import com.pluta.camera.dtos.FrameAnalysisResultDTO;
 import com.pluta.camera.dtos.TableCoordinatesDTO;
 import com.pluta.camera.dtos.TableDTO;
-import com.pluta.camera.entities.*;
+import com.pluta.camera.entities.Frame;
+import com.pluta.camera.entities.StreamEntity;
+import com.pluta.camera.entities.TableEntity;
+import com.pluta.camera.entities.Video;
 import com.pluta.camera.repositories.FrameRepository;
 import com.pluta.camera.repositories.TableRepository;
 import com.pluta.camera.services.mappers.FrameMapper;
@@ -25,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,40 +37,71 @@ import java.util.stream.Stream;
 @Slf4j
 public class FrameService {
 
-    @Value("${upload-dir:temp}")
-    private String tempDir;
-
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private final PythonScriptExecutor pythonExecutor;
     private final TableRepository tableRepository;
     private final TableMapper tableMapper;
     private final FrameMapper frameMapper;
     private final FrameRepository frameRepository;
-
+    @Value("${upload-dir:temp}")
+    private String tempDir;
 
     public void frameAnalysis(File file, Double confidenceThreshold,
-                              Double zoneConfidenceThreshold, Video video, StreamEntity stream) throws IOException,
+                              Double zoneConfidenceThreshold, Video video, StreamEntity stream,
+                              Double frameTimeSecond) throws IOException,
             InterruptedException {
-        List<FrameAnalysisResultDTO> results =  analyze( file,  confidenceThreshold,
-                 zoneConfidenceThreshold, video.getCamera().getId(), video.getZone().getId(), video.getBranch().getId(),
+
+        List<FrameAnalysisResultDTO> results = analyze(file, confidenceThreshold,
+                zoneConfidenceThreshold, video.getCamera().getId(), video.getZone().getId(), video.getBranch().getId(),
                 video.getTenant().getId());
 
         List<Frame> frames = frameMapper.toEntityList(results);
 
-        frames.forEach(f -> {f.setVideo(video); f.setStream(stream);
-            f.setBranch(video.getBranch()); f.setTenant(video.getTenant()); f.setConfidenceThreshold(confidenceThreshold);});
+        // Fetch all tables for the frames and create a lookup map
+        List<Long> tableIds = results.stream()
+                .map(FrameAnalysisResultDTO::getTableId)
+                .filter(java.util.Objects::nonNull)
+                .map(Integer::longValue)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, TableEntity> tableMap = tableRepository.findAllById(tableIds).stream()
+                .collect(Collectors.toMap(TableEntity::getId, t -> t));
+
+        // Set all relationships for each frame
+        for (int i = 0; i < frames.size(); i++) {
+            Frame frame = frames.get(i);
+            FrameAnalysisResultDTO resultDTO = results.get(i);
+
+            frame.setVideo(video);
+            frame.setStream(stream);
+            frame.setBranch(video.getBranch());
+            frame.setTenant(video.getTenant());
+            frame.setConfidenceThreshold(confidenceThreshold);
+            frame.setFrameOffsetSeconds(frameTimeSecond);
+
+            // Set the table reference
+            if (resultDTO.getTableId() != null) {
+                TableEntity table = tableMap.get(resultDTO.getTableId().longValue());
+                if (table != null) {
+                    frame.setTable(table);
+                } else {
+                    log.warn("Table with ID {} not found for frame", resultDTO.getTableId());
+                }
+            }
+        }
 
         frameRepository.saveAll(frames);
     }
 
 
     public List<FrameAnalysisResultDTO> analyze(File file, Double confidenceThreshold,
-                                                Double zoneConfidenceThreshold,Long cameraId,
+                                                Double zoneConfidenceThreshold, Long cameraId,
                                                 Long zoneId, Long branchId, Long tenantId) throws IOException,
             InterruptedException {
 
-        List<TableEntity> tables =  tableRepository.findByTenantIdAndBranchIdAndZoneIdAndCameraId(tenantId,branchId,
-                zoneId,cameraId);
+        List<TableEntity> tables = tableRepository.findByTenantIdAndBranchIdAndZoneIdAndCameraId(tenantId, branchId,
+                zoneId, cameraId);
 
         List<TableDTO> tableDTOS = tableMapper.toDTOList(tables);
 
@@ -90,8 +123,9 @@ public class FrameService {
         for (Map.Entry<Long, List<String>> entry : coo.entrySet()) {
             Long key = entry.getKey();
             List<String> value = entry.getValue();
-            frames.add(pythonExecutor.executeAnalysis(paths, confidenceThreshold,
-                    zoneConfidenceThreshold, cameraId, key, value));
+
+            FrameAnalysisResultDTO frameDto = pythonExecutor.executeAnalysis(paths, confidenceThreshold,zoneConfidenceThreshold, cameraId, key, value);
+            frames.add(frameDto);
         }
 
         return frames;
@@ -106,7 +140,7 @@ public class FrameService {
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
-        String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+        String uniqueFilename = UUID.randomUUID() + fileExtension;
 
         // Create temp directory path
         Path tempDirPath = Paths.get(tempDir);

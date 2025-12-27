@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-//@RestController
-@RequestMapping("/api/v1/tenants")
+@RestController
+@RequestMapping("/v1/tenants")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Tenant Management", description = "APIs for managing tenants")
-@PreAuthorize("hasRole('SUPPER-ADMIN')")
+//@PreAuthorize("hasRole('SUPPER-ADMIN')")
 public class TenantController {
 
     private final TenantService tenantService;
@@ -46,14 +46,6 @@ public class TenantController {
         Page<TenantDTO> tenants = tenantService.findAll(pageable);
         return ResponseEntity.ok(tenants);
     }
-/*
-    @GetMapping("/all")
-    @Operation(summary = "Get all tenants without pagination")
-    public ResponseEntity<List<TenantDTO>> getAllTenantsNoPaging() {
-        log.debug("REST request to get all Tenants without pagination");
-        List<TenantDTO> tenants = tenantService.findAll();
-        return ResponseEntity.ok(tenants);
-    }*/
 
     @GetMapping("/status/{status}")
     @Operation(summary = "Get tenants by status")
@@ -75,13 +67,13 @@ public class TenantController {
         return ResponseEntity.ok(tenant);
     }
 
-  /*  @PostMapping
+    @PostMapping
     @Operation(summary = "Create a new tenant")
     public ResponseEntity<TenantDTO> createTenant(@Valid @RequestBody TenantDTO createDTO) {
         log.debug("REST request to create Tenant : {}", createDTO);
         TenantDTO createdTenant = tenantService.create(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTenant);
-    }*/
+    }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing tenant")

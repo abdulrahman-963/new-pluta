@@ -1,7 +1,7 @@
 package com.pluta.camera.services.mappers;
 
-import com.pluta.camera.dtos.ZoneDTO;
-import com.pluta.camera.entities.Zone;
+import com.pluta.camera.dtos.WidgetDTO;
+import com.pluta.camera.entities.Widget;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -11,6 +11,5 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public interface ZoneMapper extends GenericMapper<Zone, ZoneDTO>{
-
+public interface WidgetMapper extends GenericMapper<Widget, WidgetDTO>{
 }

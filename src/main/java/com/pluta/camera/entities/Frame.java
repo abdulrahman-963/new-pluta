@@ -26,6 +26,9 @@ public class Frame extends BaseEntity{
     @Column(name = "annotated_image_path")
     private String annotatedImagePath;
 
+    @Column(name = "frame_offset_seconds")
+    private Double frameOffsetSeconds;
+
     @Column(name = "resolution")
     private String resolution;
 
@@ -93,4 +96,8 @@ public class Frame extends BaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id", nullable = false, foreignKey = @ForeignKey(name = "fk_frame_branch"))
     private Branch branch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "table_id", nullable = false, foreignKey = @ForeignKey(name = "fk_frame_table"))
+    private TableEntity table;
 }

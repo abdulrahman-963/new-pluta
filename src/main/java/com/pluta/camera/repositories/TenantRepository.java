@@ -2,6 +2,8 @@ package com.pluta.camera.repositories;
 
 import com.pluta.camera.entities.Tenant;
 import com.pluta.camera.enums.TenantStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -21,4 +23,6 @@ public interface TenantRepository extends JpaRepository<Tenant, Long>, JpaSpecif
     boolean existsByContactEmail(String contactEmail);
 
     Optional<Tenant>  findByCode(String code);
+
+    boolean existsByEnglishName( String englishName);
 }

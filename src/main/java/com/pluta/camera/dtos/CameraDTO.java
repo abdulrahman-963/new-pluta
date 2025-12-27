@@ -1,6 +1,7 @@
 package com.pluta.camera.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pluta.camera.enums.CameraStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -14,22 +15,11 @@ import java.util.UUID;
 @Builder
 public class CameraDTO extends BaseDTO {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @NotNull(message = "Zone ID is required")
     private Long zoneId;
-
-    private String zoneCode;
-
-    @NotNull(message = "Branch ID is required")
-    private Long branchId;
-
-    private String branchCode;
-
-    @NotNull(message = "Tenant ID is required")
-    private Long tenantId;
-
-    private String tenantCode;
 
     @NotBlank(message = "Code is required")
     @Size(max = 200, message = "Code must not exceed 200 characters")

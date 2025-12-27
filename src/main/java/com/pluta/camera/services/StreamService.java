@@ -112,7 +112,7 @@ public class StreamService {
                                 createDTO.getBranchId(), createDTO.getTenantId())));
 
         // Validate zone exists and belongs to branch
-        Zone zone = zoneRepository.findByBranchIdAndId(createDTO.getBranchId(), createDTO.getZoneId())
+        Zone zone = zoneRepository.findByTenantIdAndBranchIdAndId(createDTO.getTenantId(), createDTO.getBranchId(), createDTO.getZoneId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Zone not found with id: %d for branch: %d",
                                 createDTO.getZoneId(), createDTO.getBranchId())));

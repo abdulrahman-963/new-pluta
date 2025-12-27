@@ -15,13 +15,6 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface TableMapper extends GenericMapper<TableEntity, TableDTO>{
 
-    @Mapping(source = "camera.id", target = "cameraId")
-    @Mapping(source = "camera.code", target = "cameraCode")
-    @Mapping(source = "zone.id", target = "zoneId")
-    @Mapping(source = "zone.code", target = "zoneCode")
-    @Mapping(source = "branch.id", target = "branchId")
-    @Mapping(source = "branch.code", target = "branchCode")
-    @Mapping(source = "tenant.id", target = "tenantId")
-    @Mapping(source = "tenant.englishName", target = "tenantName")
-    TableDTO toDTO(TableEntity entity);
+    @Mapping(target = "coordinates", ignore = true)
+    TableEntity toEntity(TableDTO dto);
 }

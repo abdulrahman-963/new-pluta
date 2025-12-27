@@ -2,29 +2,17 @@ package com.pluta.camera.repositories;
 
 
 import com.pluta.camera.entities.Zone;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import com.pluta.camera.repositories.generics.GenericRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ZoneRepository extends JpaRepository<Zone, Long>, JpaSpecificationExecutor<Zone> {
+public interface ZoneRepository extends GenericRepository<Zone> {
 
-    List<Zone> findByBranchId(Long branchId);
+    Optional<Zone> findByTenantIdAndBranchIdAndCode(Long tenantId, Long branchId, String code);
 
-    Optional<Zone> findByBranchIdAndCode(Long branchId, String code);
+    boolean existsByTenantIdAndBranchIdAndCode(Long tenantId, Long branchId, String code);
 
-    Optional<Zone> findByTenantIdAndBranchIdAndId(Long tenantId,Long branchId, Long id);
-
-    Optional<Zone> findByBranchIdAndId(Long branchId, Long id);
-
-    List<Zone> findByCode(String code);
-
-    boolean existsByBranchIdAndCode(Long branchId, String code);
-
-    long countByBranchId(Long branchId);
-
-    void deleteByBranchId(Long branchId);
+    long countByTenantIdAndBranchId(Long tenantId,Long branchId);
 }

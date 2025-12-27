@@ -25,12 +25,13 @@ public class TenantFilter implements HandlerInterceptor {
             "/api/swagger-ui",
             "/api/v3/api-docs",
             "/api/swagger-resources",
-            "/api/actuator"
+            "/api/actuator",
+            "/api/ws/info"
     };
 
     // Paths that skip branch validation but still validate tenant
     private static final String[] BRANCH_EXCLUDED_PATHS = {
-            "/api/v1/branches/all"
+            "/api/v1/branches","/api/v1/widgets-groups", "/api/v1/tenants"
 
     };
 
@@ -66,12 +67,12 @@ public class TenantFilter implements HandlerInterceptor {
 
         // Regular branch validation for other paths
         if (Objects.isNull(branchIds) || CollectionUtils.isEmpty(branchIds)) {
-            throw new IllegalArgumentException("branchId must not be null");
+            throw new IllegalArgumentException("branchId must not be null in path "+requestPath);
         }
 
         String branchId = request.getHeader(BRANCH_CODE_HEADER);
 
-        Assert.hasText(branchId, "branchId must not be null");
+        Assert.hasText(branchId, "branchId must not be null in path "+requestPath);
 
         // Validate branchId is in the allowed list from JWT
         if (!branchIds.contains(branchId)) {

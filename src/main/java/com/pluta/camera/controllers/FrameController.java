@@ -24,7 +24,7 @@ public class FrameController {
 
     private final FrameService frameService;
 
-
+/*
     @PostMapping(path ="/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<FrameAnalysisResultDTO>> analyzeImage(
             @RequestParam("image") MultipartFile image,
@@ -38,5 +38,5 @@ public class FrameController {
 
             return ResponseEntity.ok(frameService.analyze(image.getResource().getFile(), confidenceThreshold,zoneConfidenceThreshold,cameraId,zoneId,branchId,tenantId));
 
-    }
+    }*/
 }

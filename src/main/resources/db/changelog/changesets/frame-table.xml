@@ -37,6 +37,10 @@
                 <constraints nullable="false"/>
             </column>
 
+            <column name="table_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
             <column name="annotated_image_path" type="varchar(500)"/>
 
             <column name="resolution" type="varchar(20)"/>
@@ -70,6 +74,9 @@
             <column name="confidence_threshold" type="double precision">
                 <constraints nullable="false"/>
             </column>
+
+            <column name="frame_offset_seconds" type="double precision"/>
+
 
             <column name="status" type="varchar(50)"/>
 
@@ -131,6 +138,15 @@
                 onDelete="CASCADE"
                 onUpdate="CASCADE"/>
 
+        <addForeignKeyConstraint
+                baseTableName="frame"
+                baseColumnNames="table_id"
+                constraintName="fk_frame_table"
+                referencedTableName="table_entity"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"/>
+
         <rollback>
             <dropForeignKeyConstraint
                     baseTableName="frame"
@@ -144,6 +160,9 @@
             <dropForeignKeyConstraint
                     baseTableName="frame"
                     constraintName="fk_frame_branch"/>
+            <dropForeignKeyConstraint
+                    baseTableName="frame"
+                    constraintName="fk_frame_table"/>
         </rollback>
     </changeSet>
 
@@ -167,6 +186,10 @@
             <column name="branch_id"/>
         </createIndex>
 
+        <createIndex indexName="idx_frame_table_id" tableName="frame">
+            <column name="table_id"/>
+        </createIndex>
+
         <createIndex indexName="idx_frame_created_at" tableName="frame">
             <column name="created_at"/>
         </createIndex>
@@ -175,6 +198,7 @@
             <dropIndex indexName="idx_frame_video_id" tableName="frame"/>
             <dropIndex indexName="idx_frame_stream_id" tableName="frame"/>
             <dropIndex indexName="idx_frame_created_at" tableName="frame"/>
+            <dropIndex indexName="idx_frame_table_id" tableName="frame"/>
         </rollback>
     </changeSet>
 

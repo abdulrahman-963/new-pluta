@@ -38,7 +38,7 @@ spring:
         format_sql: false
         dialect: org.hibernate.dialect.OracleDialect
         jdbc:
-          batch_size: 20
+          batch_size: 200
         order_inserts: true
         order_updates: true
 
@@ -74,6 +74,8 @@ spring:
     default-schema: PLUTA
     liquibase-schema: PLUTA
     drop-first: false
+  cache:
+    type: simple
 # Custom application properties
 analysis:
   python:

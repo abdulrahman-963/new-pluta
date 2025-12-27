@@ -33,11 +33,6 @@ public class TenantService {
         return tenantMapper.toDTO(tenant);
     }
 
-    public List<TenantDTO> findAll() {
-        log.debug("Finding all tenants");
-        List<Tenant> tenants = tenantRepository.findAll();
-        return tenantMapper.toDTOList(tenants);
-    }
 
     public Page<TenantDTO> findAll(Pageable pageable) {
         log.debug("Finding all tenants with pagination: {}", pageable);
@@ -58,12 +53,12 @@ public class TenantService {
         return tenantMapper.toDTO(tenant);
     }
 
-   /* @Transactional
+    @Transactional
     public TenantDTO create(TenantDTO createDTO) {
-        log.debug("Creating new tenant: {}", createDTO.getName());
+        log.debug("Creating new tenant: {}", createDTO.getEnglishName());
 
-        if (tenantRepository.existsByName(createDTO.getName())) {
-            throw new IllegalArgumentException("Tenant with name already exists: " + createDTO.getName());
+        if (tenantRepository.existsByEnglishName(createDTO.getEnglishName())) {
+            throw new IllegalArgumentException("Tenant with name already exists: " + createDTO.getEnglishName());
         }
 
         Tenant tenant = tenantMapper.toEntity(createDTO);
@@ -71,7 +66,7 @@ public class TenantService {
         log.info("Created tenant with id: {}", savedTenant.getId());
 
         return tenantMapper.toDTO(savedTenant);
-    }*/
+    }
 
     @Transactional
     public TenantDTO update(Long id, TenantDTO updateDTO) {
@@ -103,7 +98,5 @@ public class TenantService {
         return tenantRepository.existsById(id);
     }
 
-   /* public boolean existsByName(String name) {
-        return tenantRepository.existsByName(name);
-    }*/
+
 }

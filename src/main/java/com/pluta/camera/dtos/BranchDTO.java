@@ -1,6 +1,7 @@
 package com.pluta.camera.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,12 +16,8 @@ import lombok.*;
 @Builder
 public class BranchDTO extends BaseDTO {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
-
-    @NotNull(message = "Tenant ID is required")
-    private Long tenantId;
-
-    private String tenantCode;
 
     @NotBlank(message = "Code is required")
     @Size(max = 255, message = "Code must not exceed 255 characters")

@@ -1,6 +1,5 @@
 package com.pluta.camera.dtos;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +10,7 @@ public class FrameAnalysisResultDTO {
 
     private Integer cameraId;
     private Integer tableId;
+    private Double frameOffsetSeconds;
     private String resolution;
     private Integer tablesDetected;
     private Integer chairsDetected;

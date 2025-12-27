@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="018-create-dashboards-sequence" author="kilani">
+        <comment>Create sequence for camera table</comment>
+
+        <createSequence
+                sequenceName="widget_group_seq"
+                startValue="1"
+                incrementBy="1"/>
+
+        <rollback>
+            <dropSequence sequenceName="widget_group_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="002-create-widget_group-table" author="dashboard-team">
+        <comment>Create widget_group table with JSONB support for </comment>
+
+        <createTable tableName="widget_group">
+
+
+            <!-- Primary Key -->
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_widget_group"/>
+            </column>
+
+            <!-- Business Columns -->
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="is_public" type="NUMBER(1)" defaultValueNumeric="1">
+                <constraints nullable="true"/>
+            </column>
+
+            <!-- Audit Columns (from BaseEntity) -->
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="updated_by" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="widget_group"/>
+        </rollback>
+    </changeSet>
+
+
+
+
+    <changeSet id="006-insert-sample-widget_group" author="dashboard-team" dbms="oracle" context="dev,test">
+               <comment>Insert sample widget_group</comment>
+
+                <sql>
+                    INSERT INTO widget_group (id, name, description, is_public )
+                    VALUES (widget_group_seq.nextval, 'Video Analysis',
+                            'Video Analysis Widgets', 0);
+                </sql>
+
+                <rollback>
+                    <sql>
+                        DELETE FROM widget_group WHERE name IN ('Video Analysis');
+                    </sql>
+                </rollback>
+            </changeSet>
+
+
+
+</databaseChangeLog>

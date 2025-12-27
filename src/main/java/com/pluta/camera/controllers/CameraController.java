@@ -2,7 +2,6 @@ package com.pluta.camera.controllers;
 
 
 import com.pluta.camera.dtos.CameraDTO;
-import com.pluta.camera.enums.CameraStatus;
 import com.pluta.camera.services.CameraService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/cameras")
@@ -34,7 +32,7 @@ public class CameraController {
     @Operation(summary = "Get camera by ID")
     public ResponseEntity<CameraDTO> getCameraById(@PathVariable Long id) {
         log.debug("REST request to get Camera : {}", id);
-        CameraDTO camera = cameraService.findById(id);
+        CameraDTO camera = cameraService.findByIdAndTenantIdAndBranchId(id);
         return ResponseEntity.ok(camera);
     }
 
@@ -56,38 +54,6 @@ public class CameraController {
         return ResponseEntity.ok(cameras);
     }
 
-
-    @GetMapping("/tenant/{tenantId}/branch/{branchId}/zone/{zoneId}")
-    @Operation(summary = "Get cameras by tenant, branch and zone")
-    public ResponseEntity<List<CameraDTO>> getCamerasByTenantBranchAndZone(
-            @PathVariable Long tenantId,
-            @PathVariable Long branchId,
-            @PathVariable Long zoneId
-    ) {
-        log.debug("REST request to get Cameras for tenant: {}, branch: {} and zone: {}",
-                tenantId, branchId, zoneId);
-        List<CameraDTO> cameras = cameraService.findByTenantIdAndBranchIdAndZoneId(tenantId, branchId, zoneId);
-        return ResponseEntity.ok(cameras);
-    }
-
-    @GetMapping("/status/{status}")
-    @Operation(summary = "Get cameras by status")
-    public ResponseEntity<List<CameraDTO>> getCamerasByStatus(@PathVariable CameraStatus status) {
-        log.debug("REST request to get Cameras by status : {}", status);
-        List<CameraDTO> cameras = cameraService.findByStatus(status);
-        return ResponseEntity.ok(cameras);
-    }
-
-    @GetMapping("/branch/{branchId}/status/{status}")
-    @Operation(summary = "Get cameras by branch and status")
-    public ResponseEntity<List<CameraDTO>> getCamerasByBranchIdAndStatus(
-            @PathVariable Long branchId,
-            @PathVariable CameraStatus status
-    ) {
-        log.debug("REST request to get Cameras for branch: {} with status: {}", branchId, status);
-        List<CameraDTO> cameras = cameraService.findByBranchIdAndStatus(branchId, status);
-        return ResponseEntity.ok(cameras);
-    }
 
     @PostMapping
     @Operation(summary = "Create a new camera")
@@ -116,13 +82,6 @@ public class CameraController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/exists")
-    @Operation(summary = "Check if camera exists")
-    public ResponseEntity<Boolean> cameraExists(@PathVariable Long id) {
-        log.debug("REST request to check if Camera exists : {}", id);
-        boolean exists = cameraService.existsById(id);
-        return ResponseEntity.ok(exists);
-    }
 
     @GetMapping("/zone/{zoneId}/count")
     @Operation(summary = "Count cameras for a zone")
@@ -132,10 +91,10 @@ public class CameraController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/branch/{branchId}/count")
+    @GetMapping("/count")
     @Operation(summary = "Count cameras for a branch")
-    public ResponseEntity<Long> countCamerasByBranchId(@PathVariable Long branchId) {
-        log.debug("REST request to count Cameras for branch : {}", branchId);
+    public ResponseEntity<Long> countCamerasByBranchId() {
+        log.debug("REST request to count Cameras for branch ");
         long count = cameraService.countByTenantIdAndBranchId();
         return ResponseEntity.ok(count);
     }

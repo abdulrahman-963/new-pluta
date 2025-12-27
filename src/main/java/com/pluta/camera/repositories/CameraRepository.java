@@ -14,18 +14,10 @@ import java.util.Optional;
 @Repository
 public interface CameraRepository extends GenericRepository<Camera> {
 
-    List<Camera> findByZoneId(Long zoneId);
-
     List<Camera> findByTenantIdAndBranchIdAndZoneId(Long tenantId, Long branchId, Long zoneId);
-
-    Optional<Camera> findByCodeAndZoneIdAndBranchIdAndTenantId(String code, Long zoneId, Long branchId, Long tenantId);
-
-    List<Camera> findByStatus(CameraStatus status);
-
-    List<Camera> findByBranchIdAndStatus(Long branchId, CameraStatus status);
 
     boolean existsByCodeAndZoneIdAndBranchIdAndTenantId(String code, Long zoneId, Long branchId, Long tenantId);
 
-    long countByZoneId(Long zoneId);
+    long countByTenantIdAndBranchIdAndZoneId(Long tenantId, Long branchId, Long zoneId);
 
 }

@@ -14,8 +14,4 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface BranchMapper extends GenericMapper<Branch, BranchDTO>{
 
-    @Mapping(source = "tenant.id", target = "tenantId")
-    @Mapping(source = "tenant.code", target = "tenantCode")
-    BranchDTO toDTO(Branch entity);
-
 }

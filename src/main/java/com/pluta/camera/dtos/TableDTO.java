@@ -1,6 +1,7 @@
 package com.pluta.camera.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,24 +21,14 @@ import java.util.UUID;
 @Builder
 public class TableDTO extends BaseDTO{
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @NotNull(message = "Camera ID is required")
     private Long cameraId;
-    private String cameraCode;
 
     @NotNull(message = "Zone ID is required")
     private Long zoneId;
-    private String zoneCode;
-
-    @NotNull(message = "Branch ID is required")
-    private Long branchId;
-    private String branchCode;
-
-    @NotNull(message = "Tenant ID is required")
-    private Long tenantId;
-
-    private String tenantName;
 
     @NotNull(message = "Table number is required")
     private Integer tableNumber;
