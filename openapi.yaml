@@ -1,0 +1,974 @@
+openapi: 3.0.3
+info:
+  title: Pluta Camera AI API
+  description: |
+    API for managing camera streams, video processing, and AI-powered image analysis.
+
+    ## Features
+    - Camera and stream management
+    - Video upload and processing with YOLO object detection
+    - Real-time stream analysis
+    - Table detection and zone monitoring
+    - Multi-tenant architecture
+
+    ## Authentication
+    All endpoints require OAuth2/JWT authentication via Keycloak.
+    Include the JWT token in the Authorization header: `Bearer {token}`
+
+  version: 1.0.0
+  contact:
+    name: Pluta Camera AI Support
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8081/api
+    description: Local development server
+  - url: https://api.pluta.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Video Management
+    description: Operations for uploading and processing videos
+  - name: Stream Management
+    description: APIs for managing camera streams
+  - name: Camera Management
+    description: APIs for managing cameras
+  - name: Table Management
+    description: APIs for managing tables with coordinates
+  - name: Zone Management
+    description: APIs for managing zones
+  - name: Frame Analysis
+    description: Frame and image analysis operations
+  - name: Image Analysis
+    description: Image analysis operations
+  - name: Query Execution
+    description: Dynamic query execution
+
+paths:
+  /v1/video/upload:
+    post:
+      tags:
+        - Video Management
+      summary: Upload video for processing
+      description: |
+        Upload a video file for AI-powered processing and analysis.
+        The video will be processed asynchronously using YOLO object detection.
+      operationId: uploadVideo
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - zoneId
+                - cameraId
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Video file (MP4, AVI, MOV, etc.)
+                zoneId:
+                  type: integer
+                  format: int64
+                  description: ID of the zone where the video was captured
+                  example: 1
+                cameraId:
+                  type: integer
+                  format: int64
+                  description: ID of the camera that captured the video
+                  example: 1
+      responses:
+        '200':
+          description: Video uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Video uploaded successfully and processing started
+                  videoId:
+                    type: integer
+                    format: int64
+                    example: 123
+        '400':
+          description: Bad request - invalid file or missing parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /v1/video:
+    get:
+      tags:
+        - Video Management
+      summary: Get all videos with pagination
+      description: Retrieve a paginated list of all videos
+      operationId: getAllVideos
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/SizeParameter'
+        - $ref: '#/components/parameters/SortParameter'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VideoResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /v1/video/by-tenant-branch:
+    get:
+      tags:
+        - Video Management
+      summary: Get videos by tenant and branch
+      description: Get videos filtered by current user's tenant ID and branch ID
+      operationId: getVideosByTenantBranch
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/SizeParameter'
+        - $ref: '#/components/parameters/SortParameter'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VideoResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /v1/video/{videoId}:
+    get:
+      tags:
+        - Video Management
+      summary: Get video details by ID
+      description: Retrieve detailed information about a specific video
+      operationId: getVideoById
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Video ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+        '404':
+          description: Video not found
+
+  /v1/video/{videoId}/status:
+    get:
+      tags:
+        - Video Management
+      summary: Get video processing status
+      description: Check the current processing status of a video
+      operationId: getVideoStatus
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Video ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+                    example: COMPLETED
+        '404':
+          description: Video not found
+
+  /v1/streams:
+    get:
+      tags:
+        - Stream Management
+      summary: Get all streams with pagination
+      description: Retrieve a paginated list of all camera streams
+      operationId: getAllStreams
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/SizeParameter'
+        - $ref: '#/components/parameters/SortParameter'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedStreamResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Stream Management
+      summary: Create a new stream
+      description: Create a new camera stream configuration
+      operationId: createStream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamRequest'
+      responses:
+        '201':
+          description: Stream created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /v1/streams/{id}:
+    get:
+      tags:
+        - Stream Management
+      summary: Get stream by ID
+      description: Retrieve detailed information about a specific stream
+      operationId: getStreamById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Stream ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '404':
+          description: Stream not found
+
+    put:
+      tags:
+        - Stream Management
+      summary: Update an existing stream
+      description: Update stream configuration
+      operationId: updateStream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Stream ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamRequest'
+      responses:
+        '200':
+          description: Stream updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '404':
+          description: Stream not found
+
+    delete:
+      tags:
+        - Stream Management
+      summary: Delete a stream
+      description: Remove a stream from the system
+      operationId: deleteStream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Stream ID
+      responses:
+        '204':
+          description: Stream deleted successfully
+        '404':
+          description: Stream not found
+
+  /v1/streams/{id}/activate:
+    patch:
+      tags:
+        - Stream Management
+      summary: Activate a stream
+      description: Set a stream to active status
+      operationId: activateStream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Stream ID
+      responses:
+        '200':
+          description: Stream activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '404':
+          description: Stream not found
+
+  /v1/streams/{id}/deactivate:
+    patch:
+      tags:
+        - Stream Management
+      summary: Deactivate a stream
+      description: Set a stream to inactive status
+      operationId: deactivateStream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Stream ID
+      responses:
+        '200':
+          description: Stream deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '404':
+          description: Stream not found
+
+  /v1/streams/zone/{zoneId}/camera/{cameraId}:
+    get:
+      tags:
+        - Stream Management
+      summary: Get stream by zone and camera
+      description: Retrieve stream for a specific zone and camera combination
+      operationId: getStreamByZoneAndCamera
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Zone ID
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Camera ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '404':
+          description: Stream not found
+
+  /v1/cameras:
+    get:
+      tags:
+        - Camera Management
+      summary: Get all cameras with pagination
+      description: Retrieve a paginated list of all cameras
+      operationId: getAllCameras
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/SizeParameter'
+        - $ref: '#/components/parameters/SortParameter'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCameraResponse'
+
+    post:
+      tags:
+        - Camera Management
+      summary: Create a new camera
+      description: Register a new camera in the system
+      operationId: createCamera
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CameraRequest'
+      responses:
+        '201':
+          description: Camera created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CameraResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /v1/cameras/{id}:
+    get:
+      tags:
+        - Camera Management
+      summary: Get camera by ID
+      description: Retrieve detailed information about a specific camera
+      operationId: getCameraById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Camera ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CameraResponse'
+        '404':
+          description: Camera not found
+
+    put:
+      tags:
+        - Camera Management
+      summary: Update an existing camera
+      description: Update camera configuration
+      operationId: updateCamera
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Camera ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CameraRequest'
+      responses:
+        '200':
+          description: Camera updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CameraResponse'
+        '404':
+          description: Camera not found
+
+    delete:
+      tags:
+        - Camera Management
+      summary: Delete a camera
+      description: Remove a camera from the system
+      operationId: deleteCamera
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Camera ID
+      responses:
+        '204':
+          description: Camera deleted successfully
+        '404':
+          description: Camera not found
+
+  /v1/cameras/zone/{zoneId}:
+    get:
+      tags:
+        - Camera Management
+      summary: Get cameras by zone
+      description: Get all cameras in a specific zone
+      operationId: getCamerasByZone
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Zone ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CameraResponse'
+
+  /frames/zone/{zoneId}/camera/{cameraId}/analyze:
+    post:
+      tags:
+        - Frame Analysis
+      summary: Analyze image frame
+      description: Upload and analyze a single image frame using AI object detection
+      operationId: analyzeFrame
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Zone ID
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Camera ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file to analyze
+                confidenceThreshold:
+                  type: number
+                  format: double
+                  minimum: 0.1
+                  maximum: 1.0
+                  default: 0.2
+                  description: Confidence threshold for object detection
+                zoneConfidenceThreshold:
+                  type: number
+                  format: double
+                  minimum: 0.1
+                  maximum: 1.0
+                  default: 0.7
+                  description: Zone confidence threshold
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FrameAnalysisResult'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Keycloak
+
+  parameters:
+    PageParameter:
+      name: page
+      in: query
+      description: Page number (0-indexed)
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    SizeParameter:
+      name: size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    SortParameter:
+      name: sort
+      in: query
+      description: 'Sort criteria in format: property,(asc|desc)'
+      schema:
+        type: string
+        example: createdAt,desc
+
+  schemas:
+    VideoResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 123
+        fileName:
+          type: string
+          example: video_20240115.mp4
+        filePath:
+          type: string
+          example: /storage/videos/video_20240115.mp4
+        duration:
+          type: integer
+          format: int64
+          description: Video duration in seconds
+          example: 120
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+          example: COMPLETED
+        framesExtracted:
+          type: integer
+          example: 60
+        processingStartedAt:
+          type: string
+          format: date-time
+        processingCompletedAt:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
+          nullable: true
+        zoneId:
+          type: integer
+          format: int64
+        cameraId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+
+    StreamRequest:
+      type: object
+      required:
+        - cameraId
+        - zoneId
+        - branchId
+        - tenantId
+        - url
+      properties:
+        cameraId:
+          type: integer
+          format: int64
+          example: 1
+        zoneId:
+          type: integer
+          format: int64
+          example: 1
+        branchId:
+          type: integer
+          format: int64
+          example: 1
+        tenantId:
+          type: integer
+          format: int64
+          example: 1
+        url:
+          type: string
+          format: uri
+          example: rtsp://camera.example.com/stream1
+          description: RTSP or HTTP stream URL
+        username:
+          type: string
+          maxLength: 50
+          example: admin
+        password:
+          type: string
+          format: password
+          writeOnly: true
+        modelVersion:
+          type: string
+          maxLength: 50
+          example: yolo11x
+        samplingIntervalSeconds:
+          type: integer
+          minimum: 1
+          maximum: 3600
+          example: 30
+          description: How often to sample the stream (in seconds)
+        active:
+          type: boolean
+          default: true
+
+    StreamResponse:
+      allOf:
+        - $ref: '#/components/schemas/StreamRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+            cameraCode:
+              type: string
+              example: CAM-001
+            zoneCode:
+              type: string
+              example: ZONE-A
+            branchCode:
+              type: string
+              example: BR-001
+            tenantCode:
+              type: string
+              example: TNT-001
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    CameraRequest:
+      type: object
+      required:
+        - name
+        - zoneId
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Main Entrance Camera
+        code:
+          type: string
+          maxLength: 50
+          example: CAM-001
+        zoneId:
+          type: integer
+          format: int64
+          example: 1
+        location:
+          type: string
+          maxLength: 200
+          example: Building A, Floor 1
+        streamUrl:
+          type: string
+          format: uri
+          example: rtsp://camera.example.com/stream1
+        active:
+          type: boolean
+          default: true
+
+    CameraResponse:
+      allOf:
+        - $ref: '#/components/schemas/CameraRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+            zoneCode:
+              type: string
+              example: ZONE-A
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    FrameAnalysisResult:
+      type: object
+      properties:
+        tableId:
+          type: integer
+          example: 1
+        detectedObjects:
+          type: array
+          items:
+            type: object
+            properties:
+              class:
+                type: string
+                example: person
+              confidence:
+                type: number
+                format: double
+                example: 0.95
+              bbox:
+                type: array
+                items:
+                  type: number
+                example: [100, 150, 200, 300]
+        inZone:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+
+    PagedStreamResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamResponse'
+        pageable:
+          $ref: '#/components/schemas/PageMetadata'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+        first:
+          type: boolean
+        numberOfElements:
+          type: integer
+        empty:
+          type: boolean
+
+    PagedCameraResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CameraResponse'
+        pageable:
+          $ref: '#/components/schemas/PageMetadata'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+        first:
+          type: boolean
+        numberOfElements:
+          type: integer
+        empty:
+          type: boolean
+
+    PageMetadata:
+      type: object
+      properties:
+        sort:
+          type: object
+          properties:
+            sorted:
+              type: boolean
+            unsorted:
+              type: boolean
+            empty:
+              type: boolean
+        offset:
+          type: integer
+          format: int64
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid request parameters
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          example: /api/v1/video/upload
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required or token invalid/expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ForbiddenError:
+      description: Insufficient permissions to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    BadRequestError:
+      description: Invalid request parameters or validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

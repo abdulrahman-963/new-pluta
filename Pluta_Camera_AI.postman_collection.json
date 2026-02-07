@@ -1,0 +1,537 @@
+{
+  "info": {
+    "name": "Pluta Camera AI API",
+    "_postman_id": "pluta-camera-ai-api",
+    "description": "API collection for Pluta Camera AI - Video processing, stream management, and AI object detection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Video Management",
+      "item": [
+        {
+          "name": "Upload Video",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "zoneId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "cameraId",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/video/upload",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "video", "upload"]
+            },
+            "description": "Upload a video file for AI-powered processing and analysis"
+          }
+        },
+        {
+          "name": "Get All Videos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/video?page=0&size=20&sort=id,desc",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "video"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "id,desc"
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of all videos"
+          }
+        },
+        {
+          "name": "Get Videos by Tenant and Branch",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/video/by-tenant-branch?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "video", "by-tenant-branch"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get videos filtered by current user's tenant and branch"
+          }
+        },
+        {
+          "name": "Get Video by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/video/:videoId",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "video", ":videoId"],
+              "variable": [
+                {
+                  "key": "videoId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific video"
+          }
+        },
+        {
+          "name": "Get Video Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/video/:videoId/status",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "video", ":videoId", "status"],
+              "variable": [
+                {
+                  "key": "videoId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Check the processing status of a video"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stream Management",
+      "item": [
+        {
+          "name": "Create Stream",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cameraId\": 1,\n  \"zoneId\": 1,\n  \"branchId\": 1,\n  \"tenantId\": 1,\n  \"url\": \"rtsp://camera.example.com/stream1\",\n  \"username\": \"admin\",\n  \"password\": \"secret\",\n  \"modelVersion\": \"yolo11x\",\n  \"samplingIntervalSeconds\": 30,\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/streams",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams"]
+            },
+            "description": "Create a new camera stream configuration"
+          }
+        },
+        {
+          "name": "Get All Streams",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of all streams"
+          }
+        },
+        {
+          "name": "Get Stream by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific stream"
+          }
+        },
+        {
+          "name": "Update Stream",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cameraId\": 1,\n  \"zoneId\": 1,\n  \"branchId\": 1,\n  \"tenantId\": 1,\n  \"url\": \"rtsp://camera.example.com/stream1\",\n  \"samplingIntervalSeconds\": 60,\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/streams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update stream configuration"
+          }
+        },
+        {
+          "name": "Activate Stream",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams/:id/activate",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", ":id", "activate"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Activate a stream"
+          }
+        },
+        {
+          "name": "Deactivate Stream",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams/:id/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", ":id", "deactivate"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Deactivate a stream"
+          }
+        },
+        {
+          "name": "Delete Stream",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete a stream"
+          }
+        },
+        {
+          "name": "Get Stream by Zone and Camera",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/streams/zone/:zoneId/camera/:cameraId",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "streams", "zone", ":zoneId", "camera", ":cameraId"],
+              "variable": [
+                {
+                  "key": "zoneId",
+                  "value": "1"
+                },
+                {
+                  "key": "cameraId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get stream for a specific zone and camera"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Camera Management",
+      "item": [
+        {
+          "name": "Create Camera",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Entrance Camera\",\n  \"code\": \"CAM-001\",\n  \"zoneId\": 1,\n  \"location\": \"Building A, Floor 1\",\n  \"streamUrl\": \"rtsp://camera.example.com/stream1\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/cameras",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras"]
+            },
+            "description": "Register a new camera in the system"
+          }
+        },
+        {
+          "name": "Get All Cameras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/cameras?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of cameras"
+          }
+        },
+        {
+          "name": "Get Camera by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/cameras/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific camera"
+          }
+        },
+        {
+          "name": "Update Camera",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Camera Name\",\n  \"code\": \"CAM-001\",\n  \"zoneId\": 1,\n  \"location\": \"Building A, Floor 2\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/cameras/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update camera configuration"
+          }
+        },
+        {
+          "name": "Delete Camera",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/cameras/:id",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete a camera from the system"
+          }
+        },
+        {
+          "name": "Get Cameras by Zone",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/cameras/zone/:zoneId",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras", "zone", ":zoneId"],
+              "variable": [
+                {
+                  "key": "zoneId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get all cameras in a specific zone"
+          }
+        },
+        {
+          "name": "Count Cameras by Zone",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/cameras/zone/:zoneId/count",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "cameras", "zone", ":zoneId", "count"],
+              "variable": [
+                {
+                  "key": "zoneId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Count cameras for a specific zone"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Frame Analysis",
+      "item": [
+        {
+          "name": "Analyze Image Frame",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "confidenceThreshold",
+                  "value": "0.2",
+                  "type": "text"
+                },
+                {
+                  "key": "zoneConfidenceThreshold",
+                  "value": "0.7",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/frames/zone/:zoneId/camera/:cameraId/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["frames", "zone", ":zoneId", "camera", ":cameraId", "analyze"],
+              "variable": [
+                {
+                  "key": "zoneId",
+                  "value": "1"
+                },
+                {
+                  "key": "cameraId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Upload and analyze a single image frame using AI object detection"
+          }
+        }
+      ]
+    }
+  ]
+}
