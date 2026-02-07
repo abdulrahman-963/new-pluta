@@ -1,14 +1,19 @@
 package com.pluta.camera.services;
 
+import com.pluta.camera.clients.StreamAnalysisClient;
+import com.pluta.camera.context.TenantContext;
 import com.pluta.camera.dtos.FrameAnalysisResultDTO;
+import com.pluta.camera.dtos.StreamAnalysisRequest;
 import com.pluta.camera.dtos.TableCoordinatesDTO;
 import com.pluta.camera.dtos.TableDTO;
 import com.pluta.camera.entities.Frame;
 import com.pluta.camera.entities.StreamEntity;
 import com.pluta.camera.entities.TableEntity;
 import com.pluta.camera.entities.Video;
+import com.pluta.camera.exceptions.ResourceNotFoundException;
 import com.pluta.camera.repositories.FrameRepository;
 import com.pluta.camera.repositories.TableRepository;
+import com.pluta.camera.services.interfaces.IFrameService;
 import com.pluta.camera.services.mappers.FrameMapper;
 import com.pluta.camera.services.mappers.TableMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,18 +29,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
+@Service("videoFrameService")
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
-public class FrameService {
+public class VideoFrameService implements IFrameService {
 
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private final PythonScriptExecutor pythonExecutor;
@@ -43,6 +45,7 @@ public class FrameService {
     private final TableMapper tableMapper;
     private final FrameMapper frameMapper;
     private final FrameRepository frameRepository;
+    private final StreamAnalysisClient streamAnalysisClient;
     @Value("${upload-dir:temp}")
     private String tempDir;
 
@@ -51,9 +54,10 @@ public class FrameService {
                               Double frameTimeSecond) throws IOException,
             InterruptedException {
 
-        List<FrameAnalysisResultDTO> results = analyze(file, confidenceThreshold,
+        List<FrameAnalysisResultDTO> results = analyze(file, stream.getUrl(), confidenceThreshold,
                 zoneConfidenceThreshold, video.getCamera().getId(), video.getZone().getId(), video.getBranch().getId(),
                 video.getTenant().getId());
+
 
         List<Frame> frames = frameMapper.toEntityList(results);
 
@@ -95,7 +99,7 @@ public class FrameService {
     }
 
 
-    public List<FrameAnalysisResultDTO> analyze(File file, Double confidenceThreshold,
+    private List<FrameAnalysisResultDTO> analyze(File file, String url, Double confidenceThreshold,
                                                 Double zoneConfidenceThreshold, Long cameraId,
                                                 Long zoneId, Long branchId, Long tenantId) throws IOException,
             InterruptedException {
@@ -107,12 +111,11 @@ public class FrameService {
 
         Map<Long, List<String>> coo = tableDTOS.stream()
                 .flatMap(t -> t.getCoordinates().stream())
+                .sorted(Comparator.comparing(TableCoordinatesDTO::getId))
                 .collect(Collectors.groupingBy(
                         TableCoordinatesDTO::getTableId,
-                        Collectors.flatMapping(
-                                c -> Stream.of(String.valueOf(c.getX()), String.valueOf(c.getY())),
-                                Collectors.toList()
-                        )
+                        Collectors.flatMapping( c -> Stream.of(String.valueOf(c.getX()), String.valueOf(c.getY())),
+                                Collectors.toList() )
                 ));
 
 
@@ -124,8 +127,9 @@ public class FrameService {
             Long key = entry.getKey();
             List<String> value = entry.getValue();
 
-            FrameAnalysisResultDTO frameDto = pythonExecutor.executeAnalysis(paths, confidenceThreshold,zoneConfidenceThreshold, cameraId, key, value);
-            frames.add(frameDto);
+            FrameAnalysisResultDTO frameDto = pythonExecutor.executeAnalysis(paths, confidenceThreshold,
+                    zoneConfidenceThreshold, cameraId, key, value);
+          frames.add(frameDto);
         }
 
         return frames;
